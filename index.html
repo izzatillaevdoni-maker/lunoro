@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -17,11 +16,12 @@ header{text-align:center;padding:25px;border-bottom:1px solid #eee}
 main{max-width:950px;margin:auto;padding:24px 16px}
 h2{text-align:center;font-weight:400;letter-spacing:2px}
 .products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.product{border:1px solid #eee;padding:10px}
+.product{border:1px solid #eee;padding:10px;min-width:0}
 .product img{width:100%;height:190px;object-fit:cover;background:#f4f4f4}
 .product h3{font-size:15px}
 .muted{color:#777;font-size:13px}
-.price{font-weight:bold;margin:10px 0}
+.price{font-weight:bold;font-size:17px;margin:12px 0}
+.volume-select{width:100%;padding:11px;border:1px solid #ccc;background:white;font-size:14px;margin:8px 0}
 button{background:#111;color:white;border:0;padding:13px;cursor:pointer}
 .product button{width:100%}
 #cart,.panel{margin-top:30px;padding:20px;background:#f7f7f7}
@@ -35,10 +35,15 @@ textarea{min-height:75px}
 .admin-wrap{max-width:600px;margin:auto;padding:20px}
 .product-admin{background:#fff;padding:12px;margin:10px 0;border:1px solid #ddd}
 footer{text-align:center;padding:35px;color:#777;font-size:12px}
-@media(min-width:650px){.products{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.variant-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.variant-fields input{margin:5px 0 12px}
+@media(min-width:650px){
+ .products{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
 </style>
 </head>
 <body>
+
 <header>
  <div class="logo">LUNORO</div>
  <div class="sub">THE ART OF FRAGRANCE</div>
@@ -52,6 +57,7 @@ footer{text-align:center;padding:35px;color:#777;font-size:12px}
 <main id="shop">
  <h2>КАТАЛОГ</h2>
  <div id="products" class="products">Загрузка каталога...</div>
+
  <section id="cart">
   <h2>ВАШ ЗАКАЗ</h2>
   <div id="items">Корзина пока пуста</div>
@@ -62,6 +68,7 @@ footer{text-align:center;padding:35px;color:#777;font-size:12px}
 
 <section id="admin" class="admin-wrap hidden">
  <h2>АДМИН-ПАНЕЛЬ LUNORO</h2>
+
  <div id="loginBox" class="panel">
   <h3>Вход администратора</h3>
   <input id="email" type="email" placeholder="Электронная почта">
@@ -72,28 +79,49 @@ footer{text-align:center;padding:35px;color:#777;font-size:12px}
 
  <div id="manageBox" class="panel hidden">
   <h3 id="formTitle">Добавить парфюм</h3>
+
   <form id="productForm">
    <label>Название</label>
    <input id="name" required placeholder="Например, Bleu de Chanel">
+
    <label>Бренд</label>
    <input id="brand" placeholder="Chanel">
+
    <label>Категория</label>
    <select id="category">
     <option value="Мужские">Мужские</option>
     <option value="Женские">Женские</option>
     <option value="Унисекс">Унисекс</option>
    </select>
-   <label>Объём (мл)</label>
-   <input id="volume" type="number" min="1" placeholder="100">
-   <label>Цена (₸)</label>
-   <input id="price" type="number" min="0" required placeholder="15000">
+
+   <h3>Цены по объёмам</h3>
+   <p class="muted">Заполни только те объёмы, которые есть в наличии. Цена указывается в тенге.</p>
+
+   <label>10 мл — цена (₸)</label>
+   <input id="price10" type="number" min="1" placeholder="10000">
+
+   <label>20 мл — цена (₸)</label>
+   <input id="price20" type="number" min="1" placeholder="18000">
+
+   <label>30 мл — цена (₸)</label>
+   <input id="price30" type="number" min="1" placeholder="">
+
+   <label>50 мл — цена (₸)</label>
+   <input id="price50" type="number" min="1" placeholder="">
+
+   <label>100 мл — цена (₸)</label>
+   <input id="price100" type="number" min="1" placeholder="">
+
    <label>Описание</label>
    <textarea id="description" placeholder="Описание аромата"></textarea>
+
    <label>Ссылка на фотографию</label>
    <input id="image" type="url" placeholder="https://...">
+
    <button type="submit">СОХРАНИТЬ ТОВАР</button>
    <button type="button" class="secondary" onclick="resetForm()">ОЧИСТИТЬ ФОРМУ</button>
   </form>
+
   <h3>Товары магазина</h3>
   <div id="adminProducts">Загрузка...</div>
   <button class="secondary" onclick="logout()">ВЫЙТИ ИЗ АДМИНКИ</button>
@@ -107,10 +135,12 @@ const SUPABASE_URL="https://xeelomscjnnwhnlymnfo.supabase.co";
 const SUPABASE_KEY="sb_publishable_5wavHwGR6K5mkid9zI_w8A_irHX3twl";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const phone="77073137979";
+
 let cart=[];
 let editingId=null;
 
 const isAdminPage=location.pathname.replace(/\/+$/,"")==="/admin";
+
 if(isAdminPage){
  document.getElementById("shop").classList.add("hidden");
  document.querySelector(".hero").classList.add("hidden");
@@ -120,46 +150,146 @@ if(isAdminPage){
  loadProducts();
 }
 
-function money(n){return Number(n).toLocaleString("ru-RU")+" ₸"}
-
-async function loadProducts(){
- const box=document.getElementById("products");
- const {data,error}=await db.from("products").select("*")
-  .eq("is_active",true).order("created_at",{ascending:false});
- if(error){box.textContent="Не удалось загрузить каталог.";return}
- if(!data.length){box.textContent="Скоро здесь появятся ароматы LUNORO.";return}
- box.innerHTML=data.map(p=>`
- <article class="product">
-  <img src="${safe(p.image_url||"https://placehold.co/500x600?text=LUNORO")}" alt="${safe(p.name)}" onerror="this.src='https://placehold.co/500x600?text=LUNORO'">
-  <h3>${safe(p.name)}</h3>
-  <div class="muted">${safe(p.brand||"")} ${p.volume_ml? "· "+p.volume_ml+" мл":""}</div>
-  <div class="price">${money(p.price_kzt)}</div>
-  <button onclick="addCart('${p.id}')">В КОРЗИНУ</button>
- </article>`).join("");
- window.catalog=data;
+function money(n){
+ return Number(n).toLocaleString("ru-RU")+" ₸";
 }
 
 function safe(value){
- return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+ return String(value??"").replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ }[c]));
+}
+
+// Получаем варианты объёмов.
+// Старые товары автоматически используют прежнюю цену.
+function getVariants(p){
+ if(Array.isArray(p.variants)&&p.variants.length){
+  return p.variants
+   .filter(v=>Number(v.volume_ml)>0&&Number(v.price_kzt)>0)
+   .sort((a,b)=>Number(a.volume_ml)-Number(b.volume_ml));
+ }
+
+ if(p.volume_ml&&p.price_kzt){
+  return [{
+   volume_ml:Number(p.volume_ml),
+   price_kzt:Number(p.price_kzt)
+  }];
+ }
+
+ return [];
+}
+
+async function loadProducts(){
+ const box=document.getElementById("products");
+
+ const {data,error}=await db.from("products").select("*")
+  .eq("is_active",true).order("created_at",{ascending:false});
+
+ if(error){
+  box.textContent="Не удалось загрузить каталог.";
+  return;
+ }
+
+ if(!data.length){
+  box.textContent="Скоро здесь появятся ароматы LUNORO.";
+  return;
+ }
+
+ window.catalog=data;
+
+ box.innerHTML=data.map(p=>{
+  const variants=getVariants(p);
+  const first=variants[0];
+
+  if(!first)return "";
+
+  return `
+  <article class="product">
+   <img src="${safe(p.image_url||"https://placehold.co/500x600?text=LUNORO")}"
+    alt="${safe(p.name)}"
+    onerror="this.src='https://placehold.co/500x600?text=LUNORO'">
+
+   <h3>${safe(p.name)}</h3>
+   <div class="muted">${safe(p.brand||"")}</div>
+
+   <label class="muted">Выберите объём:</label>
+   <select class="volume-select" id="volume-${safe(p.id)}"
+    onchange="changePrice('${safe(p.id)}')">
+    ${variants.map(v=>`
+     <option value="${v.volume_ml}">
+      ${v.volume_ml} мл
+     </option>
+    `).join("")}
+   </select>
+
+   <div class="price" id="price-${safe(p.id)}">
+    ${money(first.price_kzt)}
+   </div>
+
+   <button onclick="addCart('${safe(p.id)}')">
+    В КОРЗИНУ
+   </button>
+  </article>`;
+ }).join("");
+}
+
+function changePrice(id){
+ const p=(window.catalog||[]).find(x=>String(x.id)===String(id));
+ if(!p)return;
+
+ const select=document.getElementById("volume-"+id);
+ const volume=Number(select.value);
+ const variant=getVariants(p).find(v=>Number(v.volume_ml)===volume);
+
+ if(variant){
+  document.getElementById("price-"+id).textContent=money(variant.price_kzt);
+ }
 }
 
 function addCart(id){
- const p=(window.catalog||[]).find(x=>x.id===id);
+ const p=(window.catalog||[]).find(x=>String(x.id)===String(id));
  if(!p)return;
- cart.push(p);updateCart();
+
+ const select=document.getElementById("volume-"+id);
+ const volume=Number(select.value);
+ const variant=getVariants(p).find(v=>Number(v.volume_ml)===volume);
+
+ if(!variant)return;
+
+ cart.push({
+  name:p.name,
+  brand:p.brand,
+  volume_ml:variant.volume_ml,
+  price_kzt:Number(variant.price_kzt)
+ });
+
+ updateCart();
+ alert("Товар добавлен в корзину!");
 }
+
 function updateCart(){
  document.getElementById("items").innerHTML=cart.length?
- cart.map(p=>`<p>${safe(p.name)} — ${money(p.price_kzt)}</p>`).join("")
- :"Корзина пока пуста";
- document.getElementById("total").textContent="Итого: "+money(cart.reduce((s,p)=>s+p.price_kzt,0));
+  cart.map(p=>`
+   <p>${safe(p.name)} — ${p.volume_ml} мл — ${money(p.price_kzt)}</p>
+  `).join("")
+  :"Корзина пока пуста";
+
+ const total=cart.reduce((s,p)=>s+p.price_kzt,0);
+ document.getElementById("total").textContent="Итого: "+money(total);
 }
+
 function order(){
- if(!cart.length){alert("Сначала добавьте товар в корзину");return}
+ if(!cart.length){
+  alert("Сначала добавьте товар в корзину");
+  return;
+ }
+
  const sum=cart.reduce((s,p)=>s+p.price_kzt,0);
+
  const msg="Здравствуйте! Хочу заказать:\n"+
- cart.map(p=>p.name+" — "+money(p.price_kzt)).join("\n")+
- "\nИтого: "+money(sum);
+  cart.map(p=>p.name+" — "+p.volume_ml+" мл — "+money(p.price_kzt)).join("\n")+
+  "\nИтого: "+money(sum);
+
  window.open("https://wa.me/"+phone+"?text="+encodeURIComponent(msg),"_blank");
 }
 
@@ -167,84 +297,181 @@ async function checkSession(){
  const {data}=await db.auth.getSession();
  if(data.session)showAdmin();
 }
+
 async function login(){
  const email=document.getElementById("email").value;
  const password=document.getElementById("password").value;
  const msg=document.getElementById("loginMessage");
+
  msg.textContent="Проверка...";
+
  const {error}=await db.auth.signInWithPassword({email,password});
- if(error){msg.textContent="Не удалось войти. Проверь почту и пароль.";return}
+
+ if(error){
+  msg.textContent="Не удалось войти. Проверь почту и пароль.";
+  return;
+ }
+
  msg.textContent="";
  showAdmin();
 }
+
 function showAdmin(){
  document.getElementById("loginBox").classList.add("hidden");
  document.getElementById("manageBox").classList.remove("hidden");
  loadAdminProducts();
 }
+
 async function logout(){
  await db.auth.signOut();
  document.getElementById("manageBox").classList.add("hidden");
  document.getElementById("loginBox").classList.remove("hidden");
 }
+
 function resetForm(){
  editingId=null;
  document.getElementById("productForm").reset();
  document.getElementById("formTitle").textContent="Добавить парфюм";
 }
+
+function readVariants(){
+ const volumes=[10,20,30,50,100];
+
+ return volumes.map(volume=>{
+  const value=document.getElementById("price"+volume).value;
+  return {
+   volume_ml:volume,
+   price_kzt:Number(value)
+  };
+ }).filter(v=>v.price_kzt>0);
+}
+
 document.getElementById("productForm").addEventListener("submit",async e=>{
  e.preventDefault();
+
  const {data:{session}}=await db.auth.getSession();
- if(!session){alert("Сначала войдите");return}
+
+ if(!session){
+  alert("Сначала войдите");
+  return;
+ }
+
+ const variants=readVariants();
+
+ if(!variants.length){
+  alert("Укажите цену хотя бы для одного объёма.");
+  return;
+ }
+
  const item={
   name:document.getElementById("name").value.trim(),
   brand:document.getElementById("brand").value.trim(),
   category:document.getElementById("category").value,
-  volume_ml:Number(document.getElementById("volume").value)||null,
-  price_kzt:Number(document.getElementById("price").value),
+
+  // Первые значения сохраняются для совместимости
+  // со старыми товарами и другими частями сайта.
+  volume_ml:variants[0].volume_ml,
+  price_kzt:variants[0].price_kzt,
+
+  variants:variants,
+
   description:document.getElementById("description").value.trim(),
   image_url:document.getElementById("image").value.trim()||null,
   is_active:true
  };
+
  let result;
- if(editingId)result=await db.from("products").update(item).eq("id",editingId);
- else result=await db.from("products").insert(item);
- if(result.error){alert("Ошибка сохранения: "+result.error.message);return}
+
+ if(editingId){
+  result=await db.from("products").update(item).eq("id",editingId);
+ }else{
+  result=await db.from("products").insert(item);
+ }
+
+ if(result.error){
+  alert("Ошибка сохранения: "+result.error.message);
+  return;
+ }
+
  alert("Товар сохранён!");
- resetForm();loadAdminProducts();loadProducts();
+ resetForm();
+ loadAdminProducts();
+ loadProducts();
 });
+
 async function loadAdminProducts(){
  const box=document.getElementById("adminProducts");
- const {data,error}=await db.from("products").select("*").order("created_at",{ascending:false});
- if(error){box.textContent="Нет доступа или ошибка загрузки.";return}
- if(!data.length){box.textContent="Товаров пока нет.";return}
- box.innerHTML=data.map(p=>`
- <div class="product-admin">
- <b>${safe(p.name)}</b><br>${money(p.price_kzt)}
- <button onclick="editProduct('${p.id}')">ИЗМЕНИТЬ</button>
- <button class="danger" onclick="deleteProduct('${p.id}')">УДАЛИТЬ</button>
- </div>`).join("");
+
+ const {data,error}=await db.from("products").select("*")
+  .order("created_at",{ascending:false});
+
+ if(error){
+  box.textContent="Нет доступа или ошибка загрузки.";
+  return;
+ }
+
+ if(!data.length){
+  box.textContent="Товаров пока нет.";
+  return;
+ }
+
  window.adminCatalog=data;
+
+ box.innerHTML=data.map(p=>{
+  const variants=getVariants(p);
+  const prices=variants.map(v=>
+   v.volume_ml+" мл — "+money(v.price_kzt)
+  ).join("<br>");
+
+  return `
+   <div class="product-admin">
+    <b>${safe(p.name)}</b><br>
+    <span class="muted">${safe(p.brand||"")}</span><br><br>
+    ${prices}
+    <button onclick="editProduct('${safe(p.id)}')">ИЗМЕНИТЬ</button>
+    <button class="danger" onclick="deleteProduct('${safe(p.id)}')">УДАЛИТЬ</button>
+   </div>
+  `;
+ }).join("");
 }
+
 function editProduct(id){
- const p=(window.adminCatalog||[]).find(x=>x.id===id);
+ const p=(window.adminCatalog||[]).find(x=>String(x.id)===String(id));
  if(!p)return;
+
  editingId=id;
+
  document.getElementById("name").value=p.name||"";
  document.getElementById("brand").value=p.brand||"";
  document.getElementById("category").value=p.category||"Мужские";
- document.getElementById("volume").value=p.volume_ml||"";
- document.getElementById("price").value=p.price_kzt;
  document.getElementById("description").value=p.description||"";
  document.getElementById("image").value=p.image_url||"";
+
+ [10,20,30,50,100].forEach(v=>{
+  document.getElementById("price"+v).value="";
+ });
+
+ getVariants(p).forEach(v=>{
+  const field=document.getElementById("price"+v.volume_ml);
+  if(field)field.value=v.price_kzt;
+ });
+
  document.getElementById("formTitle").textContent="Изменить парфюм";
  window.scrollTo(0,0);
 }
+
 async function deleteProduct(id){
  if(!confirm("Удалить этот товар?"))return;
+
  const {error}=await db.from("products").delete().eq("id",id);
- if(error){alert("Ошибка удаления: "+error.message);return}
- loadAdminProducts();loadProducts();
+
+ if(error){
+  alert("Ошибка удаления: "+error.message);
+  return;
+ }
+
+ loadAdminProducts();
+ loadProducts();
 }
 </script>
 </body>
