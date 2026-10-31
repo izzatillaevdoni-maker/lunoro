@@ -3,50 +3,86 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LUNORO — Parfum</title>
+<meta name="theme-color" content="#111111">
+<meta name="description" content="LUNORO — коллекция премиальных ароматов. Найди свой аромат.">
+<title>LUNORO — Premium Parfum</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
+:root{
+ --black:#111;
+ --gold:#b99a62;
+ --light:#f7f6f3;
+ --grey:#777;
+ --border:#e9e6df;
+}
 *{box-sizing:border-box}
-body{margin:0;background:#fff;color:#111;font-family:Arial,sans-serif}
-header{text-align:center;padding:25px;border-bottom:1px solid #eee}
-.logo{font-size:30px;letter-spacing:7px}
-.sub{font-size:10px;letter-spacing:4px;color:#777;margin-top:7px}
-.hero{text-align:center;padding:45px 15px;background:#f7f7f7}
-.hero h1{font-weight:400;letter-spacing:3px}
-main{max-width:950px;margin:auto;padding:24px 16px}
-h2{text-align:center;font-weight:400;letter-spacing:2px}
-.products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.product{border:1px solid #eee;padding:10px;min-width:0}
-.product img{width:100%;height:190px;object-fit:cover;background:#f4f4f4}
-.product h3{font-size:15px}
-.muted{color:#777;font-size:13px}
-.price{font-weight:bold;font-size:18px;margin:10px 0}
-.old-price{color:#999;text-decoration:line-through;font-size:13px;margin-right:7px}
-.discount-badge{display:inline-block;background:#b42318;color:white;padding:5px 8px;font-size:11px;margin:5px 0}
-.volume-select{width:100%;padding:11px;border:1px solid #ccc;background:white;font-size:14px;margin:8px 0}
-button{background:#111;color:white;border:0;padding:13px;cursor:pointer}
-.product button{width:100%}
-#cart,.panel{margin-top:30px;padding:20px;background:#f7f7f7}
-#cart button{width:100%}
-input,textarea,select{width:100%;padding:13px;margin:7px 0 14px;border:1px solid #ccc;background:white;font-size:15px}
-textarea{min-height:75px}
-.panel button{width:100%;margin:5px 0}
-.secondary{background:#555}
-.danger{background:#8b2222}
+body{margin:0;background:#fff;color:var(--black);font-family:Arial,sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+header{padding:24px 16px;text-align:center;border-bottom:1px solid var(--border)}
+.logo{font-size:30px;letter-spacing:8px;font-weight:500}
+.sub{font-size:9px;letter-spacing:5px;color:var(--gold);margin-top:8px}
+.top-note{text-align:center;background:#111;color:#fff;padding:9px;font-size:10px;letter-spacing:2px}
+.hero{background:var(--light);text-align:center;padding:70px 18px}
+.hero .eyebrow{font-size:10px;letter-spacing:4px;color:var(--gold)}
+.hero h1{font-size:30px;font-weight:400;letter-spacing:4px;margin:20px 0 12px}
+.hero p{font-size:13px;color:#777;line-height:1.7}
+.gold-line{width:45px;height:1px;background:var(--gold);margin:22px auto}
+main{max-width:1150px;margin:auto;padding:35px 16px}
+.section-title{text-align:center;font-size:21px;font-weight:400;letter-spacing:4px;margin:20px 0 30px}
+.categories{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin:25px 0}
+.category-btn{background:#fff;color:#333;border:1px solid var(--border);padding:12px 17px;font-size:10px;letter-spacing:1px}
+.category-btn.active{background:#111;color:#fff;border-color:#111}
+.search-wrap{max-width:430px;margin:0 auto 25px}
+.search-wrap input{width:100%;padding:14px;border:1px solid var(--border);outline:none}
+.products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.product{border:1px solid var(--border);padding:9px;min-width:0;position:relative}
+.product img{width:100%;height:190px;object-fit:cover;background:#f6f5f2}
+.product h3{font-size:14px;font-weight:500;margin:12px 0 5px}
+.muted{font-size:12px;color:var(--grey)}
+.product .volume-select{width:100%;padding:11px;border:1px solid var(--border);background:white;margin:10px 0}
+.price{font-size:17px;font-weight:bold;margin:9px 0}
+.old-price{font-size:12px;color:#999;text-decoration:line-through;margin-right:6px}
+.discount-badge{display:inline-block;background:#a52c2c;color:#fff;padding:5px 7px;font-size:10px}
+.add-btn{width:100%;background:#111;color:#fff;border:0;padding:13px;font-size:10px;letter-spacing:2px;margin-top:8px}
+.add-btn:active{background:var(--gold)}
+#cart{margin-top:55px;padding:25px;background:var(--light)}
+.cart-row{padding:12px 0;border-bottom:1px solid var(--border)}
+.cart-actions{display:flex;align-items:center;gap:9px;margin-top:9px}
+.cart-actions button{padding:7px 12px;background:#111;color:#fff;border:0}
+.remove-btn{background:#8b2525!important}
+.total{font-size:19px;font-weight:bold;margin:20px 0}
+.whatsapp-btn{width:100%;padding:16px;background:#111;color:#fff;border:0;letter-spacing:2px}
+footer{background:#111;color:#fff;text-align:center;padding:38px 15px;margin-top:40px}
+footer .logo{font-size:24px}
+footer p{font-size:11px;color:#aaa;line-height:1.8}
+.admin-wrap{max-width:650px;margin:auto;padding:20px}
+.panel{background:var(--light);padding:20px;margin:20px 0}
+.panel h3{font-weight:400;letter-spacing:2px}
+input,textarea,select{width:100%;padding:13px;border:1px solid #ddd;background:#fff;margin:7px 0 15px}
+textarea{min-height:80px}
+.panel button{width:100%;padding:13px;background:#111;color:white;border:0;margin:5px 0}
+.secondary{background:#666!important}
+.danger{background:#982b2b!important}
 .hidden{display:none!important}
-.admin-wrap{max-width:600px;margin:auto;padding:20px}
-.product-admin{background:#fff;padding:12px;margin:10px 0;border:1px solid #ddd}
-footer{text-align:center;padding:35px;color:#777;font-size:12px}
-.variant-row{border:1px solid #ddd;padding:12px;margin:12px 0;background:#fff}
+.product-admin{background:white;padding:14px;margin:12px 0;border:1px solid var(--border);font-size:13px}
+.variant-row{background:white;border:1px solid var(--border);padding:13px;margin:12px 0}
 .variant-row h4{margin:0 0 8px}
-.variant-row label{font-size:13px;color:#555}
-.variant-row input,.variant-row select{margin-bottom:8px}
+.variant-row label{font-size:12px;color:#666}
 @media(min-width:650px){
- .products{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .products{grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+ .product{padding:14px}
+ .product img{height:270px}
+ .hero{padding:100px 20px}
+ .hero h1{font-size:42px}
 }
 </style>
 </head>
+
 <body>
+
+<div class="top-note">ПРЕМИАЛЬНЫЕ АРОМАТЫ · LUNORO</div>
 
 <header>
  <div class="logo">LUNORO</div>
@@ -54,27 +90,41 @@ footer{text-align:center;padding:35px;color:#777;font-size:12px}
 </header>
 
 <section class="hero">
- <h1>НАЙДИ СВОЙ АРОМАТ</h1>
- <p>Коллекция ароматов для особенных моментов</p>
+ <div class="eyebrow">DISCOVER YOUR SIGNATURE</div>
+ <h1>ТВОЙ АРОМАТ. ТВОЙ СТИЛЬ.</h1>
+ <div class="gold-line"></div>
+ <p>Коллекция ароматов, которые оставляют впечатление.</p>
 </section>
 
 <main id="shop">
- <h2>КАТАЛОГ</h2>
+ <h2 class="section-title">КОЛЛЕКЦИЯ</h2>
+
+ <div class="categories">
+  <button class="category-btn active" data-category="Все" onclick="setCategory('Все',this)">ВСЕ АРОМАТЫ</button>
+  <button class="category-btn" data-category="Мужские" onclick="setCategory('Мужские',this)">МУЖСКИЕ</button>
+  <button class="category-btn" data-category="Женские" onclick="setCategory('Женские',this)">ЖЕНСКИЕ</button>
+  <button class="category-btn" data-category="Унисекс" onclick="setCategory('Унисекс',this)">УНИСЕКС</button>
+ </div>
+
+ <div class="search-wrap">
+  <input id="search" type="search" placeholder="Поиск аромата или бренда..." oninput="renderProducts()">
+ </div>
+
  <div id="products" class="products">Загрузка каталога...</div>
 
  <section id="cart">
-  <h2>ВАШ ЗАКАЗ</h2>
+  <h2 class="section-title">ВАША КОРЗИНА</h2>
   <div id="items">Корзина пока пуста</div>
-  <p id="total">Итого: 0 ₸</p>
-  <button onclick="order()">ЗАКАЗАТЬ ЧЕРЕЗ WHATSAPP</button>
+  <div class="total" id="total">Итого: 0 ₸</div>
+  <button class="whatsapp-btn" onclick="order()">ОФОРМИТЬ ЗАКАЗ В WHATSAPP</button>
  </section>
 </main>
 
 <section id="admin" class="admin-wrap hidden">
- <h2>АДМИН-ПАНЕЛЬ LUNORO</h2>
+ <h2 class="section-title">LUNORO ADMIN</h2>
 
  <div id="loginBox" class="panel">
-  <h3>Вход администратора</h3>
+  <h3>ВХОД АДМИНИСТРАТОРА</h3>
   <input id="email" type="email" placeholder="Электронная почта">
   <input id="password" type="password" placeholder="Пароль">
   <button onclick="login()">ВОЙТИ</button>
@@ -82,7 +132,7 @@ footer{text-align:center;padding:35px;color:#777;font-size:12px}
  </div>
 
  <div id="manageBox" class="panel hidden">
-  <h3 id="formTitle">Добавить парфюм</h3>
+  <h3 id="formTitle">ДОБАВИТЬ АРОМАТ</h3>
 
   <form id="productForm">
    <label>Название</label>
@@ -98,9 +148,8 @@ footer{text-align:center;padding:35px;color:#777;font-size:12px}
     <option value="Унисекс">Унисекс</option>
    </select>
 
-   <h3>Цены и скидки по объёмам</h3>
-   <p class="muted">Укажи обычную цену. Если скидка не нужна, оставь её значение равным 0.</p>
-
+   <h3>ОБЪЁМЫ И СКИДКИ</h3>
+   <p class="muted">Укажи обычную цену и скидку отдельно для каждого объёма.</p>
    <div id="variantFields"></div>
 
    <label>Описание</label>
@@ -113,13 +162,17 @@ footer{text-align:center;padding:35px;color:#777;font-size:12px}
    <button type="button" class="secondary" onclick="resetForm()">ОЧИСТИТЬ ФОРМУ</button>
   </form>
 
-  <h3>Товары магазина</h3>
+  <h3>ТОВАРЫ МАГАЗИНА</h3>
   <div id="adminProducts">Загрузка...</div>
-  <button class="secondary" onclick="logout()">ВЫЙТИ ИЗ АДМИНКИ</button>
+  <button class="secondary" onclick="logout()">ВЫЙТИ</button>
  </div>
 </section>
 
-<footer>LUNORO · PARFUM<br><br>© 2026 LUNORO</footer>
+<footer>
+ <div class="logo">LUNORO</div>
+ <div class="sub">THE ART OF FRAGRANCE</div>
+ <p>Открой свой аромат.<br>© 2026 LUNORO</p>
+</footer>
 
 <script>
 const SUPABASE_URL="https://xeelomscjnnwhnlymnfo.supabase.co";
@@ -130,6 +183,7 @@ const phone="77073137979";
 const volumes=[10,20,30,50,100];
 let cart=[];
 let editingId=null;
+let activeCategory="Все";
 
 const isAdminPage=location.pathname.replace(/\/+$/,"")==="/admin";
 
@@ -143,47 +197,42 @@ function safe(value){
  }[c]));
 }
 
-// Создаём поля для цен и скидок в админке.
 function buildVariantFields(){
  document.getElementById("variantFields").innerHTML=volumes.map(v=>`
   <div class="variant-row">
    <h4>${v} мл</h4>
-
    <label>Обычная цена (₸)</label>
-   <input id="price${v}" type="number" min="1" placeholder="Например, 10000">
-
+   <input id="price${v}" type="number" min="1" placeholder="Цена">
    <label>Тип скидки</label>
    <select id="discountType${v}">
     <option value="none">Без скидки</option>
     <option value="percent">Процент (%)</option>
     <option value="fixed">Сумма (₸)</option>
    </select>
-
    <label>Размер скидки</label>
    <input id="discountValue${v}" type="number" min="0" placeholder="Например, 10">
   </div>
  `).join("");
 }
-
 buildVariantFields();
 
 if(isAdminPage){
  document.getElementById("shop").classList.add("hidden");
  document.querySelector(".hero").classList.add("hidden");
+ document.querySelector("header").classList.add("hidden");
+ document.querySelector(".top-note").classList.add("hidden");
+ document.querySelector("footer").classList.add("hidden");
  document.getElementById("admin").classList.remove("hidden");
  checkSession();
 }else{
  loadProducts();
 }
 
-// Старые товары продолжают работать.
 function getVariants(p){
  if(Array.isArray(p.variants)&&p.variants.length){
-  return p.variants
-   .filter(v=>Number(v.volume_ml)>0&&Number(v.price_kzt)>0)
+  return p.variants.filter(v=>Number(v.volume_ml)>0&&Number(v.price_kzt)>0)
    .sort((a,b)=>Number(a.volume_ml)-Number(b.volume_ml));
  }
-
  if(p.volume_ml&&p.price_kzt){
   return [{
    volume_ml:Number(p.volume_ml),
@@ -192,85 +241,80 @@ function getVariants(p){
    discount_value:0
   }];
  }
-
  return [];
 }
 
-// Рассчитываем конечную цену.
 function getPrice(v){
  const original=Number(v.price_kzt)||0;
  const value=Number(v.discount_value)||0;
  const type=v.discount_type||"none";
-
  let discount=0;
 
- if(type==="percent"){
-  discount=original*Math.min(value,100)/100;
- }else if(type==="fixed"){
-  discount=Math.min(value,original);
- }
+ if(type==="percent")discount=original*Math.min(value,100)/100;
+ if(type==="fixed")discount=Math.min(value,original);
 
  discount=Math.round(discount);
 
  return {
-  original:original,
-  discount:discount,
+  original,
+  discount,
   final:Math.max(0,original-discount),
-  type:type,
-  value:value
+  type,
+  value
  };
 }
 
 function discountText(v){
- const price=getPrice(v);
-
- if(price.discount<=0)return "";
-
- if(price.type==="percent"){
-  return "−"+price.value+"%";
- }
-
- return "−"+money(price.discount);
+ const p=getPrice(v);
+ if(p.discount<=0)return "";
+ return p.type==="percent"?"−"+p.value+"%":"−"+money(p.discount);
 }
 
 function priceHTML(v){
- const price=getPrice(v);
-
- if(price.discount>0){
-  return `
-   <div>
-    <span class="old-price">${money(price.original)}</span>
-    <span class="discount-badge">${discountText(v)}</span>
-   </div>
-   <div class="price">${money(price.final)}</div>
-  `;
+ const p=getPrice(v);
+ if(p.discount>0){
+  return `<div><span class="old-price">${money(p.original)}</span>
+  <span class="discount-badge">${discountText(v)}</span></div>
+  <div class="price">${money(p.final)}</div>`;
  }
+ return `<div class="price">${money(p.final)}</div>`;
+}
 
- return `<div class="price">${money(price.final)}</div>`;
+function setCategory(category,button){
+ activeCategory=category;
+ document.querySelectorAll(".category-btn").forEach(b=>b.classList.remove("active"));
+ button.classList.add("active");
+ renderProducts();
 }
 
 async function loadProducts(){
  const box=document.getElementById("products");
-
  const {data,error}=await db.from("products").select("*")
   .eq("is_active",true).order("created_at",{ascending:false});
 
- if(error){
-  box.textContent="Не удалось загрузить каталог.";
-  return;
- }
+ if(error){box.textContent="Не удалось загрузить каталог.";return}
+ window.catalog=data||[];
+ renderProducts();
+}
+
+function renderProducts(){
+ const box=document.getElementById("products");
+ const query=(document.getElementById("search")?.value||"").trim().toLowerCase();
+
+ const data=(window.catalog||[]).filter(p=>{
+  const categoryOK=activeCategory==="Все"||p.category===activeCategory;
+  const searchOK=(String(p.name||"")+" "+String(p.brand||"")).toLowerCase().includes(query);
+  return categoryOK&&searchOK;
+ });
 
  if(!data.length){
-  box.textContent="Скоро здесь появятся ароматы LUNORO.";
+  box.textContent="По вашему запросу ничего не найдено.";
   return;
  }
-
- window.catalog=data;
 
  box.innerHTML=data.map(p=>{
   const variants=getVariants(p);
   const first=variants[0];
-
   if(!first)return "";
 
   return `
@@ -278,25 +322,14 @@ async function loadProducts(){
     <img src="${safe(p.image_url||"https://placehold.co/500x600?text=LUNORO")}"
      alt="${safe(p.name)}"
      onerror="this.src='https://placehold.co/500x600?text=LUNORO'">
-
     <h3>${safe(p.name)}</h3>
     <div class="muted">${safe(p.brand||"")}</div>
-
-    <label class="muted">Выберите объём:</label>
     <select class="volume-select" id="volume-${safe(p.id)}"
      onchange="changePrice('${safe(p.id)}')">
-     ${variants.map(v=>`
-      <option value="${v.volume_ml}">
-       ${v.volume_ml} мл
-      </option>
-     `).join("")}
+     ${variants.map(v=>`<option value="${v.volume_ml}">${v.volume_ml} мл</option>`).join("")}
     </select>
-
     <div id="price-${safe(p.id)}">${priceHTML(first)}</div>
-
-    <button onclick="addCart('${safe(p.id)}')">
-     В КОРЗИНУ
-    </button>
+    <button class="add-btn" onclick="addCart('${safe(p.id)}')">В КОРЗИНУ</button>
    </article>
   `;
  }).join("");
@@ -305,79 +338,88 @@ async function loadProducts(){
 function changePrice(id){
  const p=(window.catalog||[]).find(x=>String(x.id)===String(id));
  if(!p)return;
-
- const select=document.getElementById("volume-"+id);
- const volume=Number(select.value);
-
- const variant=getVariants(p).find(v=>Number(v.volume_ml)===volume);
-
- if(variant){
-  document.getElementById("price-"+id).innerHTML=priceHTML(variant);
- }
+ const volume=Number(document.getElementById("volume-"+id).value);
+ const v=getVariants(p).find(x=>Number(x.volume_ml)===volume);
+ if(v)document.getElementById("price-"+id).innerHTML=priceHTML(v);
 }
 
 function addCart(id){
  const p=(window.catalog||[]).find(x=>String(x.id)===String(id));
  if(!p)return;
 
- const select=document.getElementById("volume-"+id);
- const volume=Number(select.value);
+ const volume=Number(document.getElementById("volume-"+id).value);
+ const v=getVariants(p).find(x=>Number(x.volume_ml)===volume);
+ if(!v)return;
 
- const variant=getVariants(p).find(v=>Number(v.volume_ml)===volume);
- if(!variant)return;
+ const price=getPrice(v);
+ const existing=cart.find(x=>x.id===id&&x.volume_ml===volume);
 
- const price=getPrice(variant);
-
- cart.push({
-  name:p.name,
-  volume_ml:variant.volume_ml,
-  original_price_kzt:price.original,
-  discount_kzt:price.discount,
-  discount_label:discountText(variant),
-  price_kzt:price.final
- });
+ if(existing){
+  existing.quantity++;
+ }else{
+  cart.push({
+   id,
+   name:p.name,
+   volume_ml:volume,
+   original_price_kzt:price.original,
+   discount_kzt:price.discount,
+   discount_label:discountText(v),
+   price_kzt:price.final,
+   quantity:1
+  });
+ }
 
  updateCart();
- alert("Товар добавлен в корзину!");
+}
+
+function updateQuantity(index,change){
+ if(!cart[index])return;
+ cart[index].quantity+=change;
+ if(cart[index].quantity<=0)cart.splice(index,1);
+ updateCart();
+}
+
+function removeCartItem(index){
+ cart.splice(index,1);
+ updateCart();
 }
 
 function updateCart(){
- document.getElementById("items").innerHTML=cart.length?
-  cart.map(p=>`
-   <p>
-    ${safe(p.name)} — ${p.volume_ml} мл<br>
-    ${p.discount_kzt>0?
-     `<span class="old-price">${money(p.original_price_kzt)}</span>
-      <span class="discount-badge">${safe(p.discount_label)}</span><br>`:""}
-    ** ${money(p.price_kzt)}
-   </p>
-  `).join("")
-  :"Корзина пока пуста";
+ const box=document.getElementById("items");
 
- const total=cart.reduce((s,p)=>s+p.price_kzt,0);
+ box.innerHTML=cart.length?cart.map((p,i)=>`
+  <div class="cart-row">
+   <b>${safe(p.name)}</b><br>
+   <span class="muted">${p.volume_ml} мл</span><br>
+   ${p.discount_kzt>0?`
+    <span class="old-price">${money(p.original_price_kzt)}</span>
+    <span class="discount-badge">${safe(p.discount_label)}</span><br>
+   `:""}
+   <b>${money(p.price_kzt)}</b>
+   <div class="cart-actions">
+    <button onclick="updateQuantity(${i},-1)">−</button>
+    <span>${p.quantity}</span>
+    <button onclick="updateQuantity(${i},1)">+</button>
+    <button class="remove-btn" onclick="removeCartItem(${i})">Удалить</button>
+   </div>
+  </div>
+ `).join(""):"Корзина пока пуста";
+
+ const total=cart.reduce((s,p)=>s+p.price_kzt*p.quantity,0);
  document.getElementById("total").textContent="Итого: "+money(total);
 }
 
 function order(){
- if(!cart.length){
-  alert("Сначала добавьте товар в корзину");
-  return;
- }
+ if(!cart.length){alert("Сначала добавьте товар в корзину");return}
 
- const sum=cart.reduce((s,p)=>s+p.price_kzt,0);
+ const sum=cart.reduce((s,p)=>s+p.price_kzt*p.quantity,0);
 
  const msg="Здравствуйте! Хочу заказать:\n"+
-  cart.map(p=>{
-   let line=p.name+" — "+p.volume_ml+" мл — "+money(p.price_kzt);
-
-   if(p.discount_kzt>0){
-    line+=" (обычная цена "+money(p.original_price_kzt)+
-     ", скидка "+p.discount_label+")";
-   }
-
-   return line;
-  }).join("\n")+
-  "\nИтого: "+money(sum);
+ cart.map(p=>{
+  let line=p.name+" — "+p.volume_ml+" мл × "+p.quantity+" — "+money(p.price_kzt*p.quantity);
+  if(p.discount_kzt>0)line+=" (скидка "+p.discount_label+")";
+  return line;
+ }).join("\n")+"\nИтого: "+money(sum);
 
  window.open("https://wa.me/"+phone+"?text="+encodeURIComponent(msg),"_blank");
 }
@@ -391,16 +433,9 @@ async function login(){
  const email=document.getElementById("email").value;
  const password=document.getElementById("password").value;
  const msg=document.getElementById("loginMessage");
-
  msg.textContent="Проверка...";
-
  const {error}=await db.auth.signInWithPassword({email,password});
-
- if(error){
-  msg.textContent="Не удалось войти. Проверь почту и пароль.";
-  return;
- }
-
+ if(error){msg.textContent="Не удалось войти. Проверь почту и пароль.";return}
  msg.textContent="";
  showAdmin();
 }
@@ -420,7 +455,7 @@ async function logout(){
 function resetForm(){
  editingId=null;
  document.getElementById("productForm").reset();
- document.getElementById("formTitle").textContent="Добавить парфюм";
+ document.getElementById("formTitle").textContent="ДОБАВИТЬ АРОМАТ";
 }
 
 function readVariants(){
@@ -430,14 +465,8 @@ function readVariants(){
   const value=Number(document.getElementById("discountValue"+v).value)||0;
 
   if(!price||price<=0)return null;
-
-  if(type==="percent"&&(value<0||value>100)){
-   throw new Error("Скидка в процентах должна быть от 0 до 100.");
-  }
-
-  if(type==="fixed"&&value>price){
-   throw new Error("Скидка не может быть больше обычной цены.");
-  }
+  if(type==="percent"&&(value<0||value>100))throw new Error("Процент скидки должен быть от 0 до 100.");
+  if(type==="fixed"&&(value<0||value>price))throw new Error("Скидка не может превышать цену.");
 
   return {
    volume_ml:v,
@@ -452,25 +481,12 @@ document.getElementById("productForm").addEventListener("submit",async e=>{
  e.preventDefault();
 
  const {data:{session}}=await db.auth.getSession();
-
- if(!session){
-  alert("Сначала войдите");
-  return;
- }
+ if(!session){alert("Сначала войдите");return}
 
  let variants;
+ try{variants=readVariants()}catch(error){alert(error.message);return}
 
- try{
-  variants=readVariants();
- }catch(error){
-  alert(error.message);
-  return;
- }
-
- if(!variants.length){
-  alert("Укажите цену хотя бы для одного объёма.");
-  return;
- }
+ if(!variants.length){alert("Укажите цену хотя бы для одного объёма.");return}
 
  const item={
   name:document.getElementById("name").value.trim(),
@@ -478,69 +494,50 @@ document.getElementById("productForm").addEventListener("submit",async e=>{
   category:document.getElementById("category").value,
   volume_ml:variants[0].volume_ml,
   price_kzt:variants[0].price_kzt,
-  variants:variants,
+  variants,
   description:document.getElementById("description").value.trim(),
   image_url:document.getElementById("image").value.trim()||null,
   is_active:true
  };
 
  let result;
-
  if(editingId){
   result=await db.from("products").update(item).eq("id",editingId);
  }else{
   result=await db.from("products").insert(item);
  }
 
- if(result.error){
-  alert("Ошибка сохранения: "+result.error.message);
-  return;
- }
+ if(result.error){alert("Ошибка сохранения: "+result.error.message);return}
 
  alert("Товар сохранён!");
  resetForm();
- loadAdminProducts();
- loadProducts();
+ await loadAdminProducts();
+ await loadProducts();
 });
 
 async function loadAdminProducts(){
  const box=document.getElementById("adminProducts");
+ const {data,error}=await db.from("products").select("*").order("created_at",{ascending:false});
 
- const {data,error}=await db.from("products").select("*")
-  .order("created_at",{ascending:false});
-
- if(error){
-  box.textContent="Нет доступа или ошибка загрузки.";
-  return;
- }
-
- if(!data.length){
-  box.textContent="Товаров пока нет.";
-  return;
- }
+ if(error){box.textContent="Нет доступа или ошибка загрузки.";return}
+ if(!data.length){box.textContent="Товаров пока нет.";return}
 
  window.adminCatalog=data;
 
  box.innerHTML=data.map(p=>{
-  const variants=getVariants(p);
-
-  const prices=variants.map(v=>{
+  const prices=getVariants(p).map(v=>{
    const price=getPrice(v);
-   return `
-    <div>
-     ${v.volume_ml} мл —
-     ${price.discount>0?
-      `<span class="old-price">${money(price.original)}</span>
-       ${money(price.final)} <span class="discount-badge">${discountText(v)}</span>`
-      :money(price.original)}
-    </div>
-   `;
+   return `<div>${v.volume_ml} мл — ${
+    price.discount>0?
+    `<span class="old-price">${money(price.original)}</span>${money(price.final)} <span class="discount-badge">${discountText(v)}</span>`:
+    money(price.original)
+   }</div>`;
   }).join("");
 
   return `
    <div class="product-admin">
     <b>${safe(p.name)}</b><br>
-    <span class="muted">${safe(p.brand||"")}</span><br><br>
+    <span class="muted">${safe(p.brand||"")} · ${safe(p.category||"")}</span><br><br>
     ${prices}
     <button onclick="editProduct('${safe(p.id)}')">ИЗМЕНИТЬ</button>
     <button class="danger" onclick="deleteProduct('${safe(p.id)}')">УДАЛИТЬ</button>
@@ -554,7 +551,6 @@ function editProduct(id){
  if(!p)return;
 
  editingId=id;
-
  document.getElementById("name").value=p.name||"";
  document.getElementById("brand").value=p.brand||"";
  document.getElementById("category").value=p.category||"Мужские";
@@ -568,31 +564,21 @@ function editProduct(id){
  });
 
  getVariants(p).forEach(v=>{
-  const priceField=document.getElementById("price"+v.volume_ml);
-  const typeField=document.getElementById("discountType"+v.volume_ml);
-  const valueField=document.getElementById("discountValue"+v.volume_ml);
-
-  if(priceField)priceField.value=v.price_kzt;
-  if(typeField)typeField.value=v.discount_type||"none";
-  if(valueField)valueField.value=v.discount_value||"";
+  document.getElementById("price"+v.volume_ml).value=v.price_kzt;
+  document.getElementById("discountType"+v.volume_ml).value=v.discount_type||"none";
+  document.getElementById("discountValue"+v.volume_ml).value=v.discount_value||"";
  });
 
- document.getElementById("formTitle").textContent="Изменить парфюм";
+ document.getElementById("formTitle").textContent="ИЗМЕНИТЬ АРОМАТ";
  window.scrollTo(0,0);
 }
 
 async function deleteProduct(id){
  if(!confirm("Удалить этот товар?"))return;
-
  const {error}=await db.from("products").delete().eq("id",id);
-
- if(error){
-  alert("Ошибка удаления: "+error.message);
-  return;
- }
-
- loadAdminProducts();
- loadProducts();
+ if(error){alert("Ошибка удаления: "+error.message);return}
+ await loadAdminProducts();
+ await loadProducts();
 }
 </script>
 </body>
