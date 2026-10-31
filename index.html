@@ -55,7 +55,7 @@ main{max-width:1150px;margin:auto;padding:35px 16px}
 .checkout-form{margin-top:30px;padding:20px;background:#fff;border:1px solid var(--border)}
 .checkout-form h3{font-weight:400;letter-spacing:2px;font-size:16px;margin-bottom:20px}
 .checkout-form label{display:block;font-size:12px;color:#777;margin-top:12px}
-.checkout-form input,.checkout-form select,.checkout-form textarea{width:100%;padding:14px;border:1px solid #ddd;margin:7px 0;background:#fff}
+.checkout-form input,.checkout-form textarea{width:100%;padding:14px;border:1px solid #ddd;margin:7px 0;background:#fff}
 .checkout-form textarea{min-height:80px;resize:vertical}
 .whatsapp-btn{width:100%;padding:16px;background:#111;color:#fff;border:0;letter-spacing:2px;margin-top:18px}
 footer{background:#111;color:#fff;text-align:center;padding:38px 15px;margin-top:40px}
@@ -64,7 +64,6 @@ footer p{font-size:11px;color:#aaa;line-height:1.8}
 .admin-wrap{max-width:650px;margin:auto;padding:20px}
 .panel{background:var(--light);padding:20px;margin:20px 0}
 .panel h3{font-weight:400;letter-spacing:2px}
-input,textarea,select{font-size:15px}
 .panel input,.panel textarea,.panel select{width:100%;padding:13px;border:1px solid #ddd;background:#fff;margin:7px 0 15px}
 .panel textarea{min-height:80px}
 .panel button{width:100%;padding:13px;background:#111;color:white;border:0;margin:5px 0}
@@ -133,15 +132,6 @@ input,textarea,select{font-size:15px}
 
    <label for="customerCity">Город</label>
    <input id="customerCity" type="text" maxlength="80" placeholder="Например, Алматы">
-
-   <label for="deliveryMethod">Способ получения</label>
-   <select id="deliveryMethod" onchange="toggleAddress()">
-    <option value="Доставка">Доставка</option>
-    <option value="Самовывоз">Самовывоз</option>
-   </select>
-
-   <label id="addressLabel" for="customerAddress">Адрес доставки</label>
-   <input id="customerAddress" type="text" maxlength="200" placeholder="Улица, дом, квартира">
 
    <label for="customerComment">Комментарий к заказу</label>
    <textarea id="customerComment" maxlength="500" placeholder="Дополнительная информация (необязательно)"></textarea>
@@ -327,7 +317,6 @@ function setCategory(category,button){
 
 async function loadProducts(){
  const box=document.getElementById("products");
-
  const {data,error}=await db.from("products").select("*")
   .eq("is_active",true).order("created_at",{ascending:false});
 
@@ -466,20 +455,6 @@ function updateCart(){
  document.getElementById("total").textContent="Итого: "+money(total);
 }
 
-function toggleAddress(){
- const method=document.getElementById("deliveryMethod").value;
- const label=document.getElementById("addressLabel");
- const input=document.getElementById("customerAddress");
-
- if(method==="Самовывоз"){
-  label.textContent="Место самовывоза";
-  input.placeholder="Укажите удобное место самовывоза";
- }else{
-  label.textContent="Адрес доставки";
-  input.placeholder="Улица, дом, квартира";
- }
-}
-
 function order(){
  if(!cart.length){
   alert("Сначала добавьте товар в корзину");
@@ -489,12 +464,10 @@ function order(){
  const name=document.getElementById("customerName").value.trim();
  const customerPhone=document.getElementById("customerPhone").value.trim();
  const city=document.getElementById("customerCity").value.trim();
- const method=document.getElementById("deliveryMethod").value;
- const address=document.getElementById("customerAddress").value.trim();
  const comment=document.getElementById("customerComment").value.trim();
 
- if(!name||!customerPhone||!city||!address){
-  alert("Заполните имя, телефон, город и адрес.");
+ if(!name||!customerPhone||!city){
+  alert("Заполните имя, телефон и город.");
   return;
  }
 
@@ -507,12 +480,12 @@ function order(){
 
  const products=cart.map(p=>{
   let line="• "+p.name+
-   "\n  Объём: "+p.volume_ml+" мл"+
-   "\n  Количество: "+p.quantity+
-   "\n  Цена: "+money(p.price_kzt*p.quantity);
+   "\nОбъём: "+p.volume_ml+" мл"+
+   "\nКоличество: "+p.quantity+
+   "\nЦена: "+money(p.price_kzt*p.quantity);
 
   if(p.discount_kzt>0){
-   line+="\n  Скидка: "+p.discount_label;
+   line+="\nСкидка: "+p.discount_label;
   }
 
   return line;
@@ -522,16 +495,13 @@ function order(){
   "НОВЫЙ ЗАКАЗ — LUNORO\n\n"+
   "Покупатель: "+name+"\n"+
   "Телефон: "+customerPhone+"\n"+
-  "Город: "+city+"\n"+
-  "Получение: "+method+"\n"+
-  "Адрес / место получения: "+address+"\n\n"+
+  "Город: "+city+"\n\n"+
   "ТОВАРЫ:\n"+products+
   "\n\nИТОГО: "+money(sum)+
   (comment?"\n\nКомментарий: "+comment:"")+
   "\n\nОжидаю подтверждения заказа.";
 
  const url="https://wa.me/"+phone+"?text="+encodeURIComponent(message);
-
  window.open(url,"_blank");
 }
 
