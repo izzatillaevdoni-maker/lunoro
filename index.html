@@ -1,713 +1,1214 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#111111">
-<meta name="description" content="LUNORO — премиальные ароматы. Найди свой аромат.">
-<title>LUNORO — Premium Parfum</title>
+<title>LUNORO — The Art of Fragrance</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 :root{
- --black:#111;
- --gold:#b99a62;
- --light:#f7f6f3;
- --grey:#777;
- --border:#e9e6df;
+  --black:#111;
+  --gold:#b79a68;
+  --cream:#f7f5f0;
+  --gray:#777;
+  --border:#eae7e0;
 }
 *{box-sizing:border-box}
-body{margin:0;background:#fff;color:var(--black);font-family:Arial,sans-serif}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  color:var(--black);
+  background:#fff;
+  font-family:Arial,Helvetica,sans-serif;
+}
 button,input,select,textarea{font:inherit}
 button{cursor:pointer}
-header{padding:24px 16px;text-align:center;border-bottom:1px solid var(--border)}
-.logo{font-size:30px;letter-spacing:8px;font-weight:500}
-.sub{font-size:9px;letter-spacing:5px;color:var(--gold);margin-top:8px}
-.top-note{text-align:center;background:#111;color:#fff;padding:9px;font-size:10px;letter-spacing:2px}
-.hero{background:var(--light);text-align:center;padding:70px 18px}
-.hero .eyebrow{font-size:10px;letter-spacing:4px;color:var(--gold)}
-.hero h1{font-size:30px;font-weight:400;letter-spacing:4px;margin:20px 0 12px}
-.hero p{font-size:13px;color:#777;line-height:1.7}
-.gold-line{width:45px;height:1px;background:var(--gold);margin:22px auto}
-main{max-width:1150px;margin:auto;padding:35px 16px}
-.section-title{text-align:center;font-size:21px;font-weight:400;letter-spacing:4px;margin:20px 0 30px}
-.categories{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin:25px 0}
-.category-btn{background:#fff;color:#333;border:1px solid var(--border);padding:12px 17px;font-size:10px;letter-spacing:1px}
-.category-btn.active{background:#111;color:#fff;border-color:#111}
-.search-wrap{max-width:430px;margin:0 auto 25px}
-.search-wrap input{width:100%;padding:14px;border:1px solid var(--border);outline:none}
-.products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
-.product{border:1px solid var(--border);padding:9px;min-width:0}
-.product img{width:100%;height:190px;object-fit:cover;background:#f6f5f2}
-.product h3{font-size:14px;font-weight:500;margin:12px 0 5px}
-.muted{font-size:12px;color:var(--grey)}
-.product .volume-select{width:100%;padding:11px;border:1px solid var(--border);background:white;margin:10px 0}
-.price{font-size:17px;font-weight:bold;margin:9px 0}
-.old-price{font-size:12px;color:#999;text-decoration:line-through;margin-right:6px}
-.discount-badge{display:inline-block;background:#a52c2c;color:#fff;padding:5px 7px;font-size:10px}
-.add-btn{width:100%;background:#111;color:#fff;border:0;padding:13px;font-size:10px;letter-spacing:2px;margin-top:8px}
-#cart{margin-top:55px;padding:25px;background:var(--light)}
-.cart-row{padding:14px 0;border-bottom:1px solid var(--border)}
-.cart-actions{display:flex;align-items:center;gap:9px;margin-top:9px;flex-wrap:wrap}
-.cart-actions button{padding:8px 12px;background:#111;color:#fff;border:0}
-.remove-btn{background:#8b2525!important}
-.total{font-size:19px;font-weight:bold;margin:20px 0}
-.checkout-form{margin-top:30px;padding:20px;background:#fff;border:1px solid var(--border)}
-.checkout-form h3{font-weight:400;letter-spacing:2px;font-size:16px;margin-bottom:20px}
-.checkout-form label{display:block;font-size:12px;color:#777;margin-top:12px}
-.checkout-form input,.checkout-form textarea{width:100%;padding:14px;border:1px solid #ddd;margin:7px 0;background:#fff}
-.checkout-form textarea{min-height:80px;resize:vertical}
-.whatsapp-btn{width:100%;padding:16px;background:#111;color:#fff;border:0;letter-spacing:2px;margin-top:18px}
-footer{background:#111;color:#fff;text-align:center;padding:38px 15px;margin-top:40px}
-footer .logo{font-size:24px}
-footer p{font-size:11px;color:#aaa;line-height:1.8}
-.admin-wrap{max-width:650px;margin:auto;padding:20px}
-.panel{background:var(--light);padding:20px;margin:20px 0}
-.panel h3{font-weight:400;letter-spacing:2px}
-.panel input,.panel textarea,.panel select{width:100%;padding:13px;border:1px solid #ddd;background:#fff;margin:7px 0 15px}
-.panel textarea{min-height:80px}
-.panel button{width:100%;padding:13px;background:#111;color:white;border:0;margin:5px 0}
-.secondary{background:#666!important}
-.danger{background:#982b2b!important}
 .hidden{display:none!important}
-.product-admin{background:white;padding:14px;margin:12px 0;border:1px solid var(--border);font-size:13px}
-.variant-row{background:white;border:1px solid var(--border);padding:13px;margin:12px 0}
-.variant-row h4{margin:0 0 8px}
-.variant-row label{font-size:12px;color:#666}
+
+header{
+  text-align:center;
+  padding:25px 15px 22px;
+  border-bottom:1px solid var(--border);
+}
+.logo{
+  font-size:31px;
+  letter-spacing:8px;
+  font-weight:400;
+}
+.sub{
+  margin-top:8px;
+  font-size:9px;
+  letter-spacing:4px;
+  color:var(--gray);
+}
+.hero{
+  text-align:center;
+  padding:55px 15px;
+  background:var(--cream);
+}
+.hero h1{
+  font-size:clamp(22px,5vw,35px);
+  font-weight:400;
+  letter-spacing:4px;
+  margin:0 0 13px;
+}
+.hero p{
+  color:var(--gray);
+  font-size:13px;
+  letter-spacing:1px;
+}
+main{
+  max-width:1150px;
+  margin:auto;
+  padding:35px 18px 70px;
+}
+.section-title{
+  text-align:center;
+  font-weight:400;
+  letter-spacing:4px;
+  font-size:20px;
+  margin:10px 0 28px;
+}
+.catalog-tools{
+  display:flex;
+  flex-direction:column;
+  gap:17px;
+  margin-bottom:25px;
+}
+.search{
+  width:100%;
+  padding:14px 16px;
+  border:1px solid var(--border);
+  outline:none;
+  background:#fff;
+}
+.search:focus{border-color:var(--gold)}
+.categories{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.category-btn{
+  padding:10px 15px;
+  color:#555;
+  background:#fff;
+  border:1px solid var(--border);
+  font-size:11px;
+  letter-spacing:1px;
+}
+.category-btn.active{
+  background:var(--black);
+  color:#fff;
+  border-color:var(--black);
+}
+.products{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:13px;
+}
+.product{
+  position:relative;
+  padding:11px;
+  border:1px solid #eee;
+  background:#fff;
+  transition:transform .25s,box-shadow .25s;
+}
+.product:hover{
+  transform:translateY(-3px);
+  box-shadow:0 12px 30px rgba(0,0,0,.06);
+}
+.product-image{
+  width:100%;
+  height:190px;
+  object-fit:cover;
+  display:block;
+  background:var(--cream);
+}
+.product h3{
+  font-size:14px;
+  line-height:1.4;
+  margin:13px 0 5px;
+}
+.brand{
+  color:var(--gray);
+  font-size:11px;
+  min-height:15px;
+}
+.product-description{
+  color:#777;
+  font-size:11px;
+  line-height:1.5;
+  margin:9px 0;
+}
+.volume-select{
+  width:100%;
+  padding:10px;
+  margin-top:12px;
+  border:1px solid var(--border);
+  background:#fff;
+  font-size:12px;
+}
+.price-line{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:7px;
+  margin:12px 0;
+}
+.price{
+  font-size:16px;
+  font-weight:bold;
+}
+.old-price{
+  color:#999;
+  text-decoration:line-through;
+  font-size:12px;
+}
+.discount-badge{
+  background:#f8e8e5;
+  color:#b52e25;
+  padding:4px 7px;
+  font-size:10px;
+}
+.add-btn{
+  width:100%;
+  padding:13px 8px;
+  background:var(--black);
+  color:white;
+  border:0;
+  font-size:10px;
+  letter-spacing:1.5px;
+  transition:background .2s;
+}
+.add-btn:hover{background:var(--gold)}
+.empty-message{
+  grid-column:1/-1;
+  text-align:center;
+  padding:40px 10px;
+  color:var(--gray);
+  font-size:13px;
+}
+
+/* Плавающая корзина */
+.cart-float{
+  position:fixed;
+  right:22px;
+  bottom:25px;
+  z-index:1000;
+  width:62px;
+  height:62px;
+  border-radius:50%;
+  border:1px solid var(--gold);
+  background:#111;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 5px 25px rgba(0,0,0,.2);
+  transition:transform .2s,background .2s;
+}
+.cart-float:active{transform:scale(.94)}
+.cart-count{
+  position:absolute;
+  top:-5px;
+  right:-5px;
+  min-width:23px;
+  height:23px;
+  padding:0 6px;
+  border-radius:20px;
+  background:#e32929;
+  color:#fff;
+  border:2px solid #fff;
+  font-size:11px;
+  font-weight:bold;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.cart-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.48);
+  z-index:1100;
+}
+.cart-drawer{
+  position:fixed;
+  z-index:1101;
+  top:0;
+  right:0;
+  width:min(460px,100%);
+  height:100%;
+  height:100dvh;
+  background:#fff;
+  padding:22px;
+  overflow-y:auto;
+  box-shadow:-10px 0 40px rgba(0,0,0,.12);
+}
+.cart-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:1px solid var(--border);
+  padding-bottom:17px;
+}
+.cart-header h2{
+  font-size:16px;
+  letter-spacing:3px;
+  font-weight:400;
+}
+.cart-close{
+  background:none;
+  border:0;
+  color:#111;
+  font-size:32px;
+  padding:0 8px;
+}
+.cart-items{padding:10px 0}
+.cart-empty{
+  text-align:center;
+  color:#888;
+  padding:35px 0;
+  font-size:13px;
+}
+.cart-row{
+  padding:15px 0;
+  border-bottom:1px solid var(--border);
+}
+.cart-row-name{
+  font-size:14px;
+  font-weight:bold;
+}
+.cart-row-info{
+  color:#888;
+  font-size:12px;
+  margin:6px 0;
+}
+.cart-row-price{font-weight:bold;font-size:14px}
+.cart-actions{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-top:12px;
+}
+.cart-actions button{
+  width:30px;
+  height:30px;
+  border:1px solid var(--border);
+  background:#fff;
+  color:#111;
+  padding:0;
+}
+.cart-actions .remove-btn{
+  width:auto;
+  padding:0 10px;
+  border:0;
+  color:#a33;
+  font-size:11px;
+}
+.cart-bottom{
+  border-top:1px solid var(--border);
+  padding-top:15px;
+}
+.total{
+  font-size:17px;
+  font-weight:bold;
+  margin:10px 0 20px;
+}
+.checkout-form h3{
+  font-size:13px;
+  letter-spacing:2px;
+  font-weight:400;
+  margin:20px 0;
+}
+.checkout-form label{
+  display:block;
+  font-size:11px;
+  color:#666;
+  margin-top:12px;
+}
+.checkout-form input,
+.checkout-form textarea{
+  width:100%;
+  padding:13px;
+  margin-top:6px;
+  border:1px solid var(--border);
+  outline:none;
+  background:#fff;
+  font-size:13px;
+}
+.checkout-form textarea{
+  min-height:75px;
+  resize:vertical;
+}
+.whatsapp-btn{
+  width:100%;
+  margin-top:17px;
+  padding:16px;
+  border:0;
+  background:#111;
+  color:#fff;
+  font-size:11px;
+  letter-spacing:1.5px;
+}
+.whatsapp-btn:hover{background:var(--gold)}
+
+/* Админ-панель */
+.admin-wrap{
+  max-width:760px;
+  margin:auto;
+  padding:25px 16px 60px;
+}
+.admin-title{
+  text-align:center;
+  font-size:20px;
+  letter-spacing:3px;
+  font-weight:400;
+}
+.panel{
+  background:var(--cream);
+  padding:20px;
+  margin:20px 0;
+}
+.panel h3{font-weight:400}
+.panel label{
+  display:block;
+  font-size:12px;
+  margin-top:12px;
+}
+.panel input,
+.panel textarea,
+.panel select{
+  width:100%;
+  padding:12px;
+  margin:6px 0;
+  border:1px solid #ddd;
+  background:#fff;
+}
+.panel textarea{min-height:70px}
+.panel button{
+  width:100%;
+  padding:13px;
+  margin:7px 0;
+  border:0;
+  background:#111;
+  color:#fff;
+}
+.secondary{background:#555!important}
+.danger{background:#8b2222!important}
+.muted{font-size:12px;color:#777}
+.variant-editor{
+  border:1px solid #ddd;
+  padding:12px;
+  margin:12px 0;
+  background:#fff;
+}
+.variant-editor h4{
+  font-size:13px;
+  font-weight:400;
+  margin:0 0 8px;
+}
+.product-admin{
+  background:#fff;
+  border:1px solid #ddd;
+  padding:13px;
+  margin:10px 0;
+}
+.product-admin button{font-size:11px}
+footer{
+  text-align:center;
+  padding:35px 15px;
+  color:#888;
+  font-size:11px;
+  letter-spacing:1px;
+  border-top:1px solid var(--border);
+}
 @media(min-width:650px){
- .products{grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
- .product{padding:14px}
- .product img{height:270px}
- .hero{padding:100px 20px}
- .hero h1{font-size:42px}
+  .products{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+  .product{padding:14px}
+  .product-image{height:260px}
+  .catalog-tools{max-width:700px;margin:0 auto 30px}
+}
+@media(min-width:950px){
+  .products{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:500px){
+  .cart-float{right:17px;bottom:20px;width:58px;height:58px}
+  .cart-drawer{padding:17px}
+  .hero{padding:42px 15px}
 }
 </style>
 </head>
 
 <body>
 
-<div class="top-note">ПРЕМИАЛЬНЫЕ АРОМАТЫ · LUNORO</div>
-
 <header>
- <div class="logo">LUNORO</div>
- <div class="sub">THE ART OF FRAGRANCE</div>
+  <div class="logo">LUNORO</div>
+  <div class="sub">THE ART OF FRAGRANCE</div>
 </header>
 
-<section class="hero">
- <div class="eyebrow">DISCOVER YOUR SIGNATURE</div>
- <h1>ТВОЙ АРОМАТ. ТВОЙ СТИЛЬ.</h1>
- <div class="gold-line"></div>
- <p>Коллекция ароматов, которые оставляют впечатление.</p>
+<section class="hero" id="hero">
+  <h1>НАЙДИ СВОЙ АРОМАТ</h1>
+  <p>Коллекция ароматов для особенных моментов</p>
 </section>
 
 <main id="shop">
- <h2 class="section-title">КОЛЛЕКЦИЯ</h2>
+  <h2 class="section-title">КАТАЛОГ</h2>
 
- <div class="categories">
-  <button class="category-btn active" onclick="setCategory('Все',this)">ВСЕ АРОМАТЫ</button>
-  <button class="category-btn" onclick="setCategory('Мужские',this)">МУЖСКИЕ</button>
-  <button class="category-btn" onclick="setCategory('Женские',this)">ЖЕНСКИЕ</button>
-  <button class="category-btn" onclick="setCategory('Унисекс',this)">УНИСЕКС</button>
- </div>
+  <div class="catalog-tools">
+    <input
+      id="searchInput"
+      class="search"
+      type="search"
+      placeholder="Поиск аромата или бренда..."
+      oninput="renderProducts()"
+    >
 
- <div class="search-wrap">
-  <input id="search" type="search" placeholder="Поиск аромата или бренда..." oninput="renderProducts()">
- </div>
-
- <div id="products" class="products">Загрузка каталога...</div>
-
- <section id="cart">
-  <h2 class="section-title">ВАША КОРЗИНА</h2>
-  <div id="items">Корзина пока пуста</div>
-  <div class="total" id="total">Итого: 0 ₸</div>
-
-  <div class="checkout-form">
-   <h3>ОФОРМЛЕНИЕ ЗАКАЗА</h3>
-
-   <label for="customerName">Ваше имя</label>
-   <input id="customerName" type="text" maxlength="80" placeholder="Введите имя">
-
-   <label for="customerPhone">Номер телефона</label>
-   <input id="customerPhone" type="tel" maxlength="20" placeholder="+7 7XX XXX XX XX">
-
-   <label for="customerCity">Город</label>
-   <input id="customerCity" type="text" maxlength="80" placeholder="Например, Алматы">
-
-   <label for="customerComment">Комментарий к заказу</label>
-   <textarea id="customerComment" maxlength="500" placeholder="Дополнительная информация (необязательно)"></textarea>
-
-   <button class="whatsapp-btn" onclick="order()">ОФОРМИТЬ ЗАКАЗ В WHATSAPP</button>
+    <div class="categories">
+      <button class="category-btn active" onclick="setCategory('Все')">Все ароматы</button>
+      <button class="category-btn" onclick="setCategory('Мужские')">Мужские</button>
+      <button class="category-btn" onclick="setCategory('Женские')">Женские</button>
+      <button class="category-btn" onclick="setCategory('Унисекс')">Унисекс</button>
+    </div>
   </div>
- </section>
+
+  <div id="products" class="products">
+    <div class="empty-message">Загрузка каталога...</div>
+  </div>
+
+  <!-- Плавающая кнопка корзины -->
+  <button id="cartFloat" class="cart-float" onclick="toggleCart()" aria-label="Открыть корзину">
+    <svg viewBox="0 0 24 24" width="27" height="27" fill="none"
+      stroke="currentColor" stroke-width="1.7"
+      stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="9" cy="21" r="1"/>
+      <circle cx="20" cy="21" r="1"/>
+      <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/>
+    </svg>
+    <span id="cartCount" class="cart-count hidden">0</span>
+  </button>
+
+  <!-- Затемнение -->
+  <div id="cartOverlay" class="cart-overlay hidden" onclick="closeCart()"></div>
+
+  <!-- Выдвижная корзина -->
+  <aside id="cartDrawer" class="cart-drawer hidden">
+    <div class="cart-header">
+      <h2>ВАША КОРЗИНА</h2>
+      <button class="cart-close" onclick="closeCart()" aria-label="Закрыть">×</button>
+    </div>
+
+    <div id="items" class="cart-items">
+      <div class="cart-empty">Корзина пока пуста</div>
+    </div>
+
+    <div class="cart-bottom">
+      <div class="total" id="total">Итого: 0 ₸</div>
+
+      <div class="checkout-form">
+        <h3>ОФОРМЛЕНИЕ ЗАКАЗА</h3>
+
+        <label for="customerName">Ваше имя</label>
+        <input id="customerName" type="text" maxlength="80" placeholder="Введите имя">
+
+        <label for="customerPhone">Номер телефона</label>
+        <input id="customerPhone" type="tel" maxlength="20" placeholder="+7 7XX XXX XX XX">
+
+        <label for="customerCity">Город</label>
+        <input id="customerCity" type="text" maxlength="80" placeholder="Например, Алматы">
+
+        <label for="customerComment">Комментарий к заказу</label>
+        <textarea id="customerComment" maxlength="500" placeholder="Необязательно"></textarea>
+
+        <button class="whatsapp-btn" onclick="order()">
+          ОФОРМИТЬ ЗАКАЗ В WHATSAPP
+        </button>
+      </div>
+    </div>
+  </aside>
 </main>
 
+<!-- Админ-панель -->
 <section id="admin" class="admin-wrap hidden">
- <h2 class="section-title">LUNORO ADMIN</h2>
+  <h2 class="admin-title">АДМИН-ПАНЕЛЬ LUNORO</h2>
 
- <div id="loginBox" class="panel">
-  <h3>ВХОД АДМИНИСТРАТОРА</h3>
-  <input id="email" type="email" placeholder="Электронная почта">
-  <input id="password" type="password" placeholder="Пароль">
-  <button onclick="login()">ВОЙТИ</button>
-  <p id="loginMessage" class="muted"></p>
- </div>
+  <div id="loginBox" class="panel">
+    <h3>Вход администратора</h3>
+    <input id="email" type="email" placeholder="Электронная почта">
+    <input id="password" type="password" placeholder="Пароль">
+    <button onclick="login()">ВОЙТИ</button>
+    <p id="loginMessage" class="muted"></p>
+  </div>
 
- <div id="manageBox" class="panel hidden">
-  <h3 id="formTitle">ДОБАВИТЬ АРОМАТ</h3>
+  <div id="manageBox" class="panel hidden">
+    <h3 id="formTitle">Добавить парфюм</h3>
 
-  <form id="productForm">
-   <label>Название</label>
-   <input id="name" required placeholder="Например, Bleu de Chanel">
+    <form id="productForm">
+      <label>Название аромата</label>
+      <input id="name" required placeholder="Например, Bleu de Chanel">
 
-   <label>Бренд</label>
-   <input id="brand" placeholder="Chanel">
+      <label>Бренд</label>
+      <input id="brand" placeholder="Chanel">
 
-   <label>Категория</label>
-   <select id="category">
-    <option value="Мужские">Мужские</option>
-    <option value="Женские">Женские</option>
-    <option value="Унисекс">Унисекс</option>
-   </select>
+      <label>Категория</label>
+      <select id="category">
+        <option value="Мужские">Мужские</option>
+        <option value="Женские">Женские</option>
+        <option value="Унисекс">Унисекс</option>
+      </select>
 
-   <h3>ОБЪЁМЫ И СКИДКИ</h3>
-   <p class="muted">Укажи обычную цену и скидку отдельно для каждого объёма.</p>
-   <div id="variantFields"></div>
+      <label>Описание</label>
+      <textarea id="description" placeholder="Описание аромата"></textarea>
 
-   <label>Описание</label>
-   <textarea id="description" placeholder="Описание аромата"></textarea>
+      <label>Ссылка на фотографию</label>
+      <input id="image" type="url" placeholder="https://...">
 
-   <label>Ссылка на фотографию</label>
-   <input id="image" type="url" placeholder="https://...">
+      <h3>Цены, объёмы и скидки</h3>
+      <p class="muted">Заполни цену для нужных объёмов. Если объём не продаётся, оставь цену пустой.</p>
 
-   <button type="submit">СОХРАНИТЬ ТОВАР</button>
-   <button type="button" class="secondary" onclick="resetForm()">ОЧИСТИТЬ ФОРМУ</button>
-  </form>
+      <div id="variantEditors"></div>
 
-  <h3>ТОВАРЫ МАГАЗИНА</h3>
-  <div id="adminProducts">Загрузка...</div>
-  <button class="secondary" onclick="logout()">ВЫЙТИ</button>
- </div>
+      <button type="submit">СОХРАНИТЬ ТОВАР</button>
+      <button type="button" class="secondary" onclick="resetForm()">ОЧИСТИТЬ ФОРМУ</button>
+    </form>
+
+    <h3>Товары магазина</h3>
+    <div id="adminProducts">Загрузка...</div>
+
+    <button class="secondary" onclick="logout()">ВЫЙТИ ИЗ АДМИНКИ</button>
+  </div>
 </section>
 
 <footer>
- <div class="logo">LUNORO</div>
- <div class="sub">THE ART OF FRAGRANCE</div>
- <p>Открой свой аромат.<br>© 2026 LUNORO</p>
+  LUNORO · PARFUM
+  <br><br>
+  © 2026 LUNORO
 </footer>
 
 <script>
-const SUPABASE_URL="https://xeelomscjnnwhnlymnfo.supabase.co";
-const SUPABASE_KEY="sb_publishable_5wavHwGR6K5mkid9zI_w8A_irHX3twl";
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const phone="77073137979";
+/* НАСТРОЙКИ */
+const SUPABASE_URL = "https://xeelomscjnnwhnlymnfo.supabase.co";
+const SUPABASE_KEY = "sb_publishable_5wavHwGR6K5mkid9zI_w8A_irHX3twl";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const phone = "77073137979";
 
-const volumes=[10,20,30,50,100];
-let cart=[];
-let editingId=null;
-let activeCategory="Все";
+const VOLUMES = [10, 20, 30, 50, 100];
 
-const isAdminPage=location.pathname.replace(/\/+$/,"")==="/admin";
+let catalog = [];
+let cart = [];
+let editingId = null;
+let activeCategory = "Все";
 
-function money(n){
- return Number(n).toLocaleString("ru-RU")+" ₸";
+const isAdminPage = location.pathname.replace(/\/+$/, "") === "/admin";
+
+if (isAdminPage) {
+  document.getElementById("shop").classList.add("hidden");
+  document.getElementById("hero").classList.add("hidden");
+  document.getElementById("admin").classList.remove("hidden");
+  checkSession();
+} else {
+  loadProducts();
 }
 
-function safe(value){
- return String(value??"").replace(/[&<>"']/g,c=>({
-  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
- }[c]));
+/* ОБЩИЕ ФУНКЦИИ */
+function money(value) {
+  return Number(value || 0).toLocaleString("ru-RU") + " ₸";
 }
 
-function buildVariantFields(){
- document.getElementById("variantFields").innerHTML=volumes.map(v=>`
-  <div class="variant-row">
-   <h4>${v} мл</h4>
-   <label>Обычная цена (₸)</label>
-   <input id="price${v}" type="number" min="1" placeholder="Цена">
-   <label>Тип скидки</label>
-   <select id="discountType${v}">
-    <option value="none">Без скидки</option>
-    <option value="percent">Процент (%)</option>
-    <option value="fixed">Сумма (₸)</option>
-   </select>
-   <label>Размер скидки</label>
-   <input id="discountValue${v}" type="number" min="0" placeholder="Например, 10">
-  </div>
- `).join("");
+function safe(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  }[char]));
 }
 
-buildVariantFields();
-
-if(isAdminPage){
- document.getElementById("shop").classList.add("hidden");
- document.querySelector(".hero").classList.add("hidden");
- document.querySelector("header").classList.add("hidden");
- document.querySelector(".top-note").classList.add("hidden");
- document.querySelector("footer").classList.add("hidden");
- document.getElementById("admin").classList.remove("hidden");
- checkSession();
-}else{
- loadProducts();
+function safeImage(url) {
+  const value = String(url || "");
+  if (/^https:\/\/[^\s"'<>]+$/i.test(value)) return safe(value);
+  return "https://placehold.co/500x600?text=LUNORO";
 }
 
-function getVariants(p){
- if(Array.isArray(p.variants)&&p.variants.length){
-  return p.variants.filter(v=>Number(v.volume_ml)>0&&Number(v.price_kzt)>0)
-   .sort((a,b)=>Number(a.volume_ml)-Number(b.volume_ml));
- }
-
- if(p.volume_ml&&p.price_kzt){
-  return [{
-   volume_ml:Number(p.volume_ml),
-   price_kzt:Number(p.price_kzt),
-   discount_type:"none",
-   discount_value:0
-  }];
- }
-
- return [];
-}
-
-function getPrice(v){
- const original=Number(v.price_kzt)||0;
- const value=Number(v.discount_value)||0;
- const type=v.discount_type||"none";
- let discount=0;
-
- if(type==="percent")discount=original*Math.min(value,100)/100;
- if(type==="fixed")discount=Math.min(value,original);
-
- discount=Math.round(discount);
-
- return {
-  original,
-  discount,
-  final:Math.max(0,original-discount),
-  type,
-  value
- };
-}
-
-function discountText(v){
- const p=getPrice(v);
- if(p.discount<=0)return "";
- return p.type==="percent"?"−"+p.value+"%":"−"+money(p.discount);
-}
-
-function priceHTML(v){
- const p=getPrice(v);
-
- if(p.discount>0){
-  return `<div>
-   <span class="old-price">${money(p.original)}</span>
-   <span class="discount-badge">${discountText(v)}</span>
-  </div>
-  <div class="price">${money(p.final)}</div>`;
- }
-
- return `<div class="price">${money(p.final)}</div>`;
-}
-
-function setCategory(category,button){
- activeCategory=category;
- document.querySelectorAll(".category-btn").forEach(b=>b.classList.remove("active"));
- button.classList.add("active");
- renderProducts();
-}
-
-async function loadProducts(){
- const box=document.getElementById("products");
- const {data,error}=await db.from("products").select("*")
-  .eq("is_active",true).order("created_at",{ascending:false});
-
- if(error){
-  box.textContent="Не удалось загрузить каталог.";
-  return;
- }
-
- window.catalog=data||[];
- renderProducts();
-}
-
-function renderProducts(){
- const box=document.getElementById("products");
- const query=(document.getElementById("search")?.value||"").trim().toLowerCase();
-
- const data=(window.catalog||[]).filter(p=>{
-  const categoryOK=activeCategory==="Все"||p.category===activeCategory;
-  const searchOK=(String(p.name||"")+" "+String(p.brand||"")).toLowerCase().includes(query);
-  return categoryOK&&searchOK;
- });
-
- if(!data.length){
-  box.textContent="По вашему запросу ничего не найдено.";
-  return;
- }
-
- box.innerHTML=data.map(p=>{
-  const variants=getVariants(p);
-  const first=variants[0];
-  if(!first)return "";
-
-  return `
-   <article class="product">
-    <img src="${safe(p.image_url||"https://placehold.co/500x600?text=LUNORO")}"
-     alt="${safe(p.name)}"
-     onerror="this.src='https://placehold.co/500x600?text=LUNORO'">
-
-    <h3>${safe(p.name)}</h3>
-    <div class="muted">${safe(p.brand||"")}</div>
-
-    <select class="volume-select" id="volume-${safe(p.id)}"
-     onchange="changePrice('${safe(p.id)}')">
-     ${variants.map(v=>`<option value="${v.volume_ml}">${v.volume_ml} мл</option>`).join("")}
-    </select>
-
-    <div id="price-${safe(p.id)}">${priceHTML(first)}</div>
-
-    <button class="add-btn" onclick="addCart('${safe(p.id)}')">В КОРЗИНУ</button>
-   </article>
-  `;
- }).join("");
-}
-
-function changePrice(id){
- const p=(window.catalog||[]).find(x=>String(x.id)===String(id));
- if(!p)return;
-
- const volume=Number(document.getElementById("volume-"+id).value);
- const v=getVariants(p).find(x=>Number(x.volume_ml)===volume);
-
- if(v)document.getElementById("price-"+id).innerHTML=priceHTML(v);
-}
-
-function addCart(id){
- const p=(window.catalog||[]).find(x=>String(x.id)===String(id));
- if(!p)return;
-
- const volume=Number(document.getElementById("volume-"+id).value);
- const v=getVariants(p).find(x=>Number(x.volume_ml)===volume);
- if(!v)return;
-
- const price=getPrice(v);
- const existing=cart.find(x=>x.id===id&&x.volume_ml===volume);
-
- if(existing){
-  existing.quantity++;
- }else{
-  cart.push({
-   id,
-   name:p.name,
-   volume_ml:volume,
-   original_price_kzt:price.original,
-   discount_kzt:price.discount,
-   discount_label:discountText(v),
-   price_kzt:price.final,
-   quantity:1
-  });
- }
-
- updateCart();
-}
-
-function updateQuantity(index,change){
- if(!cart[index])return;
-
- cart[index].quantity+=change;
-
- if(cart[index].quantity<=0){
-  cart.splice(index,1);
- }
-
- updateCart();
-}
-
-function removeCartItem(index){
- cart.splice(index,1);
- updateCart();
-}
-
-function updateCart(){
- const box=document.getElementById("items");
-
- box.innerHTML=cart.length?cart.map((p,i)=>`
-  <div class="cart-row">
-   <b>${safe(p.name)}</b><br>
-   <span class="muted">${p.volume_ml} мл</span><br>
-
-   ${p.discount_kzt>0?`
-    <span class="old-price">${money(p.original_price_kzt)}</span>
-    <span class="discount-badge">${safe(p.discount_label)}</span><br>
-   `:""}
-
-   <b>${money(p.price_kzt)}</b>
-
-   <div class="cart-actions">
-    <button onclick="updateQuantity(${i},-1)">−</button>
-    <span>${p.quantity}</span>
-    <button onclick="updateQuantity(${i},1)">+</button>
-    <button class="remove-btn" onclick="removeCartItem(${i})">Удалить</button>
-   </div>
-  </div>
- `).join(""):"Корзина пока пуста";
-
- const total=cart.reduce((s,p)=>s+p.price_kzt*p.quantity,0);
- document.getElementById("total").textContent="Итого: "+money(total);
-}
-
-function order(){
- if(!cart.length){
-  alert("Сначала добавьте товар в корзину");
-  return;
- }
-
- const name=document.getElementById("customerName").value.trim();
- const customerPhone=document.getElementById("customerPhone").value.trim();
- const city=document.getElementById("customerCity").value.trim();
- const comment=document.getElementById("customerComment").value.trim();
-
- if(!name||!customerPhone||!city){
-  alert("Заполните имя, телефон и город.");
-  return;
- }
-
- if(!/^[+\d\s()\-]{7,20}$/.test(customerPhone)){
-  alert("Проверьте правильность номера телефона.");
-  return;
- }
-
- const sum=cart.reduce((s,p)=>s+p.price_kzt*p.quantity,0);
-
- const products=cart.map(p=>{
-  let line="• "+p.name+
-   "\nОбъём: "+p.volume_ml+" мл"+
-   "\nКоличество: "+p.quantity+
-   "\nЦена: "+money(p.price_kzt*p.quantity);
-
-  if(p.discount_kzt>0){
-   line+="\nСкидка: "+p.discount_label;
+function getVariants(product) {
+  if (Array.isArray(product.variants) && product.variants.length) {
+    return product.variants
+      .filter(v => Number(v.price_kzt) > 0)
+      .sort((a,b) => Number(a.volume_ml) - Number(b.volume_ml));
   }
 
-  return line;
- }).join("\n\n");
-
- const message=
-  "НОВЫЙ ЗАКАЗ — LUNORO\n\n"+
-  "Покупатель: "+name+"\n"+
-  "Телефон: "+customerPhone+"\n"+
-  "Город: "+city+"\n\n"+
-  "ТОВАРЫ:\n"+products+
-  "\n\nИТОГО: "+money(sum)+
-  (comment?"\n\nКомментарий: "+comment:"")+
-  "\n\nОжидаю подтверждения заказа.";
-
- const url="https://wa.me/"+phone+"?text="+encodeURIComponent(message);
- window.open(url,"_blank");
-}
-
-async function checkSession(){
- const {data}=await db.auth.getSession();
- if(data.session)showAdmin();
-}
-
-async function login(){
- const email=document.getElementById("email").value;
- const password=document.getElementById("password").value;
- const msg=document.getElementById("loginMessage");
-
- msg.textContent="Проверка...";
-
- const {error}=await db.auth.signInWithPassword({email,password});
-
- if(error){
-  msg.textContent="Не удалось войти. Проверь почту и пароль.";
-  return;
- }
-
- msg.textContent="";
- showAdmin();
-}
-
-function showAdmin(){
- document.getElementById("loginBox").classList.add("hidden");
- document.getElementById("manageBox").classList.remove("hidden");
- loadAdminProducts();
-}
-
-async function logout(){
- await db.auth.signOut();
- document.getElementById("manageBox").classList.add("hidden");
- document.getElementById("loginBox").classList.remove("hidden");
-}
-
-function resetForm(){
- editingId=null;
- document.getElementById("productForm").reset();
- document.getElementById("formTitle").textContent="ДОБАВИТЬ АРОМАТ";
-}
-
-function readVariants(){
- return volumes.map(v=>{
-  const price=Number(document.getElementById("price"+v).value);
-  const type=document.getElementById("discountType"+v).value;
-  const value=Number(document.getElementById("discountValue"+v).value)||0;
-
-  if(!price||price<=0)return null;
-
-  if(type==="percent"&&(value<0||value>100)){
-   throw new Error("Процент скидки должен быть от 0 до 100.");
+  // Совместимость со старыми товарами
+  if (Number(product.price_kzt) > 0) {
+    return [{
+      volume_ml: Number(product.volume_ml) || 100,
+      price_kzt: Number(product.price_kzt),
+      discount_type: "none",
+      discount_value: 0
+    }];
   }
 
-  if(type==="fixed"&&(value<0||value>price)){
-   throw new Error("Скидка не может превышать цену.");
+  return [];
+}
+
+function getPrice(variant) {
+  const original = Number(variant.price_kzt) || 0;
+  const type = variant.discount_type || "none";
+  const value = Number(variant.discount_value) || 0;
+
+  let finalPrice = original;
+
+  if (type === "percent") {
+    finalPrice = original * (1 - value / 100);
+  } else if (type === "fixed") {
+    finalPrice = original - value;
   }
+
+  finalPrice = Math.max(0, Math.round(finalPrice));
 
   return {
-   volume_ml:v,
-   price_kzt:price,
-   discount_type:type,
-   discount_value:type==="none"?0:value
+    original,
+    final: finalPrice,
+    discounted: finalPrice < original,
+    discount: original > 0 ? Math.round((original - finalPrice) / original * 100) : 0
   };
- }).filter(Boolean);
 }
 
-document.getElementById("productForm").addEventListener("submit",async e=>{
- e.preventDefault();
+/* КАТАЛОГ */
+async function loadProducts() {
+  const box = document.getElementById("products");
+  box.innerHTML = '<div class="empty-message">Загрузка каталога...</div>';
 
- const {data:{session}}=await db.auth.getSession();
+  const { data, error } = await db
+    .from("products")
+    .select("*")
+    .eq("is_active", true)
+    .order("created_at", { ascending: false });
 
- if(!session){
-  alert("Сначала войдите");
-  return;
- }
+  if (error) {
+    box.innerHTML = '<div class="empty-message">Не удалось загрузить каталог. Попробуйте позже.</div>';
+    return;
+  }
 
- let variants;
+  catalog = data || [];
+  renderProducts();
+}
 
- try{
-  variants=readVariants();
- }catch(error){
-  alert(error.message);
-  return;
- }
+function setCategory(category) {
+  activeCategory = category;
 
- if(!variants.length){
-  alert("Укажите цену хотя бы для одного объёма.");
-  return;
- }
+  document.querySelectorAll(".category-btn").forEach(button => {
+    button.classList.toggle(
+      "active",
+      button.textContent.trim() === (category === "Все" ? "Все ароматы" : category)
+    );
+  });
 
- const item={
-  name:document.getElementById("name").value.trim(),
-  brand:document.getElementById("brand").value.trim(),
-  category:document.getElementById("category").value,
-  volume_ml:variants[0].volume_ml,
-  price_kzt:variants[0].price_kzt,
-  variants:variants,
-  description:document.getElementById("description").value.trim(),
-  image_url:document.getElementById("image").value.trim()||null,
-  is_active:true
- };
+  renderProducts();
+}
 
- let result;
+function renderProducts() {
+  const box = document.getElementById("products");
+  const search = document.getElementById("searchInput").value.trim().toLowerCase();
 
- if(editingId){
-  result=await db.from("products").update(item).eq("id",editingId);
- }else{
-  result=await db.from("products").insert(item);
- }
+  const filtered = catalog.filter(product => {
+    const matchesCategory =
+      activeCategory === "Все" || product.category === activeCategory;
 
- if(result.error){
-  alert("Ошибка сохранения: "+result.error.message);
-  return;
- }
+    const matchesSearch =
+      (product.name || "").toLowerCase().includes(search) ||
+      (product.brand || "").toLowerCase().includes(search);
 
- alert("Товар сохранён!");
- resetForm();
- await loadAdminProducts();
- await loadProducts();
+    return matchesCategory && matchesSearch;
+  });
+
+  if (!filtered.length) {
+    box.innerHTML = '<div class="empty-message">Ничего не найдено</div>';
+    return;
+  }
+
+  box.innerHTML = filtered.map(product => {
+    const variants = getVariants(product);
+
+    if (!variants.length) return "";
+
+    const first = variants[0];
+    const firstPrice = getPrice(first);
+
+    return `
+      <article class="product">
+        <img
+          class="product-image"
+          src="${safeImage(product.image_url)}"
+          alt="${safe(product.name)}"
+          onerror="this.src='https://placehold.co/500x600?text=LUNORO'"
+        >
+
+        <h3>${safe(product.name)}</h3>
+        <div class="brand">${safe(product.brand || "")}</div>
+
+        ${product.description ? `
+          <div class="product-description">${safe(product.description)}</div>
+        ` : ""}
+
+        <select class="volume-select" id="volume-${safe(product.id)}"
+          onchange="changeProductPrice('${safe(product.id)}')">
+          ${variants.map((variant, index) => `
+            <option value="${index}">
+              ${Number(variant.volume_ml)} мл
+            </option>
+          `).join("")}
+        </select>
+
+        <div class="price-line" id="price-${safe(product.id)}">
+          ${firstPrice.discounted ? `
+            <span class="old-price">${money(firstPrice.original)}</span>
+            <span class="discount-badge">-${firstPrice.discount}%</span>
+          ` : ""}
+          <span class="price">${money(firstPrice.final)}</span>
+        </div>
+
+        <button class="add-btn" onclick="addCart('${safe(product.id)}')">
+          В КОРЗИНУ
+        </button>
+      </article>
+    `;
+  }).join("");
+}
+
+function changeProductPrice(id) {
+  const product = catalog.find(p => String(p.id) === String(id));
+  if (!product) return;
+
+  const select = document.getElementById("volume-" + id);
+  const variant = getVariants(product)[Number(select.value)];
+  if (!variant) return;
+
+  const price = getPrice(variant);
+  const box = document.getElementById("price-" + id);
+
+  box.innerHTML = `
+    ${price.discounted ? `
+      <span class="old-price">${money(price.original)}</span>
+      <span class="discount-badge">-${price.discount}%</span>
+    ` : ""}
+    <span class="price">${money(price.final)}</span>
+  `;
+}
+
+/* КОРЗИНА */
+function addCart(id) {
+  const product = catalog.find(p => String(p.id) === String(id));
+  if (!product) return;
+
+  const select = document.getElementById("volume-" + id);
+  const variant = getVariants(product)[Number(select.value)];
+  if (!variant) return;
+
+  const price = getPrice(variant);
+
+  const existing = cart.find(item =>
+    String(item.id) === String(product.id) &&
+    Number(item.volume_ml) === Number(variant.volume_ml)
+  );
+
+  if (existing) {
+    existing.quantity += 1;
+  } else {
+    cart.push({
+      id: product.id,
+      name: product.name,
+      brand: product.brand || "",
+      volume_ml: Number(variant.volume_ml),
+      price_kzt: price.final,
+      original_price_kzt: price.original,
+      discount_kzt: price.original - price.final,
+      discount_label: price.discount + "%",
+      quantity: 1
+    });
+  }
+
+  updateCart();
+}
+
+function updateQuantity(index, change) {
+  if (!cart[index]) return;
+
+  cart[index].quantity += change;
+
+  if (cart[index].quantity <= 0) {
+    cart.splice(index, 1);
+  }
+
+  updateCart();
+}
+
+function removeCartItem(index) {
+  cart.splice(index, 1);
+  updateCart();
+}
+
+function updateCart() {
+  const box = document.getElementById("items");
+
+  if (!cart.length) {
+    box.innerHTML = '<div class="cart-empty">Корзина пока пуста</div>';
+  } else {
+    box.innerHTML = cart.map((item, index) => `
+      <div class="cart-row">
+        <div class="cart-row-name">${safe(item.name)}</div>
+        <div class="cart-row-info">
+          ${safe(item.brand)} · ${item.volume_ml} мл
+        </div>
+
+        ${item.discount_kzt > 0 ? `
+          <div class="cart-row-info">
+            <span class="old-price">${money(item.original_price_kzt)}</span>
+            <span class="discount-badge">${safe(item.discount_label)}</span>
+          </div>
+        ` : ""}
+
+        <div class="cart-row-price">${money(item.price_kzt)}</div>
+
+        <div class="cart-actions">
+          <button onclick="updateQuantity(${index},-1)">−</button>
+          <span>${item.quantity}</span>
+          <button onclick="updateQuantity(${index},1)">+</button>
+          <button class="remove-btn" onclick="removeCartItem(${index})">Удалить</button>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  const total = cart.reduce(
+    (sum, item) => sum + item.price_kzt * item.quantity,
+    0
+  );
+
+  const count = cart.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
+
+  document.getElementById("total").textContent = "Итого: " + money(total);
+
+  const badge = document.getElementById("cartCount");
+  badge.textContent = count;
+  badge.classList.toggle("hidden", count === 0);
+}
+
+function toggleCart() {
+  const drawer = document.getElementById("cartDrawer");
+  if (drawer.classList.contains("hidden")) {
+    openCart();
+  } else {
+    closeCart();
+  }
+}
+
+function openCart() {
+  document.getElementById("cartDrawer").classList.remove("hidden");
+  document.getElementById("cartOverlay").classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+}
+
+function closeCart() {
+  document.getElementById("cartDrawer").classList.add("hidden");
+  document.getElementById("cartOverlay").classList.add("hidden");
+  document.body.style.overflow = "";
+}
+
+/* ЗАКАЗ WHATSAPP */
+function order() {
+  if (!cart.length) {
+    alert("Сначала добавьте товар в корзину");
+    return;
+  }
+
+  const name = document.getElementById("customerName").value.trim();
+  const customerPhone = document.getElementById("customerPhone").value.trim();
+  const city = document.getElementById("customerCity").value.trim();
+  const comment = document.getElementById("customerComment").value.trim();
+
+  if (!name || !customerPhone || !city) {
+    alert("Заполните имя, номер телефона и город");
+    return;
+  }
+
+  const total = cart.reduce(
+    (sum, item) => sum + item.price_kzt * item.quantity,
+    0
+  );
+
+  const itemsText = cart.map(item => {
+    return `${item.name} (${item.volume_ml} мл) × ${item.quantity} — ${money(item.price_kzt * item.quantity)}`;
+  }).join("\n");
+
+  const message =
+`Здравствуйте! Хочу оформить заказ в LUNORO.
+
+${itemsText}
+
+Итого: ${money(total)}
+
+Имя: ${name}
+Телефон: ${customerPhone}
+Город: ${city}
+${comment ? "Комментарий: " + comment : ""}`;
+
+  const url = "https://wa.me/" + phone + "?text=" + encodeURIComponent(message);
+  window.open(url, "_blank");
+}
+
+/* АДМИН-ПАНЕЛЬ */
+async function checkSession() {
+  const { data } = await db.auth.getSession();
+
+  if (data.session) {
+    showAdmin();
+  }
+}
+
+async function login() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const message = document.getElementById("loginMessage");
+
+  message.textContent = "Проверка...";
+
+  const { error } = await db.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    message.textContent = "Не удалось войти. Проверьте почту и пароль.";
+    return;
+  }
+
+  message.textContent = "";
+  showAdmin();
+}
+
+function showAdmin() {
+  document.getElementById("loginBox").classList.add("hidden");
+  document.getElementById("manageBox").classList.remove("hidden");
+  createVariantEditors();
+  loadAdminProducts();
+}
+
+async function logout() {
+  await db.auth.signOut();
+
+  document.getElementById("manageBox").classList.add("hidden");
+  document.getElementById("loginBox").classList.remove("hidden");
+}
+
+function createVariantEditors(existingVariants = []) {
+  const box = document.getElementById("variantEditors");
+
+  box.innerHTML = VOLUMES.map(volume => {
+    const variant = existingVariants.find(
+      item => Number(item.volume_ml) === volume
+    ) || {};
+
+    return `
+      <div class="variant-editor">
+        <h4>Объём ${volume} мл</h4>
+
+        <label>Цена (₸)</label>
+        <input
+          type="number"
+          min="0"
+          id="variant-price-${volume}"
+          value="${variant.price_kzt || ""}"
+          placeholder="Например, 10000"
+        >
+
+        <label>Тип скидки</label>
+        <select id="variant-type-${volume}">
+          <option value="none" ${!variant.discount_type || variant.discount_type === "none" ? "selected" : ""}>Без скидки</option>
+          <option value="percent" ${variant.discount_type === "percent" ? "selected" : ""}>Процент (%)</option>
+          <option value="fixed" ${variant.discount_type === "fixed" ? "selected" : ""}>Сумма (₸)</option>
+        </select>
+
+        <label>Размер скидки</label>
+        <input
+          type="number"
+          min="0"
+          id="variant-discount-${volume}"
+          value="${variant.discount_value || ""}"
+          placeholder="Например, 10"
+        >
+      </div>
+    `;
+  }).join("");
+}
+
+function readVariants() {
+  const variants = [];
+
+  VOLUMES.forEach(volume => {
+    const price = Number(
+      document.getElementById("variant-price-" + volume).value
+    );
+
+    const type = document.getElementById("variant-type-" + volume).value;
+    const discount = Number(
+      document.getElementById("variant-discount-" + volume).value
+    ) || 0;
+
+    if (price > 0) {
+      variants.push({
+        volume_ml: volume,
+        price_kzt: price,
+        discount_type: type,
+        discount_value: type === "none" ? 0 : discount
+      });
+    }
+  });
+
+  return variants;
+}
+
+function resetForm() {
+  editingId = null;
+  document.getElementById("productForm").reset();
+  document.getElementById("formTitle").textContent = "Добавить парфюм";
+  createVariantEditors();
+}
+
+document.getElementById("productForm").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const { data: { session } } = await db.auth.getSession();
+
+  if (!session) {
+    alert("Сначала войдите в админ-панель");
+    return;
+  }
+
+  const variants = readVariants();
+
+  if (!variants.length) {
+    alert("Укажите цену хотя бы для одного объёма");
+    return;
+  }
+
+  const firstVariant = variants[0];
+
+  const item = {
+    name: document.getElementById("name").value.trim(),
+    brand: document.getElementById("brand").value.trim(),
+    category: document.getElementById("category").value,
+    description: document.getElementById("description").value.trim(),
+    image_url: document.getElementById("image").value.trim() || null,
+    variants: variants,
+    volume_ml: firstVariant.volume_ml,
+    price_kzt: firstVariant.price_kzt,
+    is_active: true
+  };
+
+  let result;
+
+  if (editingId) {
+    result = await db.from("products").update(item).eq("id", editingId);
+  } else {
+    result = await db.from("products").insert(item);
+  }
+
+  if (result.error) {
+    alert("Ошибка сохранения: " + result.error.message);
+    return;
+  }
+
+  alert("Товар успешно сохранён!");
+
+  resetForm();
+  loadAdminProducts();
+  loadProducts();
 });
 
-async function loadAdminProducts(){
- const box=document.getElementById("adminProducts");
+async function loadAdminProducts() {
+  const box = document.getElementById("adminProducts");
+  box.textContent = "Загрузка...";
 
- const {data,error}=await db.from("products").select("*")
-  .order("created_at",{ascending:false});
+  const { data, error } = await db
+    .from("products")
+    .select("*")
+    .order("created_at", { ascending: false });
 
- if(error){
-  box.textContent="Нет доступа или ошибка загрузки.";
-  return;
- }
+  if (error) {
+    box.textContent = "Нет доступа или ошибка загрузки.";
+    return;
+  }
 
- if(!data.length){
-  box.textContent="Товаров пока нет.";
-  return;
- }
+  if (!data || !data.length) {
+    box.textContent = "Товаров пока нет.";
+    return;
+  }
 
- window.adminCatalog=data;
+  window.adminCatalog = data;
 
- box.innerHTML=data.map(p=>{
-  const prices=getVariants(p).map(v=>{
-   const price=getPrice(v);
+  box.innerHTML = data.map(product => {
+    const variants = getVariants(product);
 
-   return `<div>${v.volume_ml} мл — ${
-    price.discount>0?
-    `<span class="old-price">${money(price.original)}</span>${money(price.final)} <span class="discount-badge">${discountText(v)}</span>`:
-    money(price.original)
-   }</div>`;
+    const prices = variants.map(v =>
+      `${v.volume_ml} мл — ${money(getPrice(v).final)}`
+    ).join("<br>");
+
+    return `
+      <div class="product-admin">
+        <b>${safe(product.name)}</b>
+        <p class="muted">${safe(product.brand || "")}</p>
+        <p class="muted">${prices}</p>
+        <button onclick="editProduct('${safe(product.id)}')">ИЗМЕНИТЬ</button>
+        <button class="danger" onclick="deleteProduct('${safe(product.id)}')">УДАЛИТЬ</button>
+      </div>
+    `;
   }).join("");
-
-  return `
-   <div class="product-admin">
-    <b>${safe(p.name)}</b><br>
-    <span class="muted">${safe(p.brand||"")} · ${safe(p.category||"")}</span><br><br>
-    ${prices}
-    <button onclick="editProduct('${safe(p.id)}')">ИЗМЕНИТЬ</button>
-    <button class="danger" onclick="deleteProduct('${safe(p.id)}')">УДАЛИТЬ</button>
-   </div>
-  `;
- }).join("");
 }
 
-function editProduct(id){
- const p=(window.adminCatalog||[]).find(x=>String(x.id)===String(id));
- if(!p)return;
+function editProduct(id) {
+  const product = (window.adminCatalog || []).find(
+    item => String(item.id) === String(id)
+  );
 
- editingId=id;
+  if (!product) return;
 
- document.getElementById("name").value=p.name||"";
- document.getElementById("brand").value=p.brand||"";
- document.getElementById("category").value=p.category||"Мужские";
- document.getElementById("description").value=p.description||"";
- document.getElementById("image").value=p.image_url||"";
+  editingId = id;
 
- volumes.forEach(v=>{
-  document.getElementById("price"+v).value="";
-  document.getElementById("discountType"+v).value="none";
-  document.getElementById("discountValue"+v).value="";
- });
+  document.getElementById("name").value = product.name || "";
+  document.getElementById("brand").value = product.brand || "";
+  document.getElementById("category").value = product.category || "Мужские";
+  document.getElementById("description").value = product.description || "";
+  document.getElementById("image").value = product.image_url || "";
 
- getVariants(p).forEach(v=>{
-  document.getElementById("price"+v.volume_ml).value=v.price_kzt;
-  document.getElementById("discountType"+v.volume_ml).value=v.discount_type||"none";
-  document.getElementById("discountValue"+v.volume_ml).value=v.discount_value||"";
- });
+  createVariantEditors(getVariants(product));
 
- document.getElementById("formTitle").textContent="ИЗМЕНИТЬ АРОМАТ";
- window.scrollTo(0,0);
+  document.getElementById("formTitle").textContent = "Изменить парфюм";
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-async function deleteProduct(id){
- if(!confirm("Удалить этот товар?"))return;
+async function deleteProduct(id) {
+  if (!confirm("Удалить этот товар?")) return;
 
- const {error}=await db.from("products").delete().eq("id",id);
+  const { error } = await db.from("products").delete().eq("id", id);
 
- if(error){
-  alert("Ошибка удаления: "+error.message);
-  return;
- }
+  if (error) {
+    alert("Ошибка удаления: " + error.message);
+    return;
+  }
 
- await loadAdminProducts();
- await loadProducts();
+  alert("Товар удалён");
+  loadAdminProducts();
+  loadProducts();
 }
+
+/* Закрытие корзины клавишей Escape */
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") closeCart();
+});
 </script>
+
 </body>
 </html>
