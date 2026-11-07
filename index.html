@@ -133,163 +133,421 @@ const SUPABASE_URL="https://xeelomscjnnwhnlymnfo.supabase.co";
 const SUPABASE_KEY="sb_publishable_5wavHwGR6K5mkid9zI_w8A_irHX3twl";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const phone="77073137979",VOLUMES=[10,20,30,50,100],NEW_DAYS=15;
+
 let catalog=[],cart=[],editingId=null,activeCategory="Все",toastTimer=null;
-const isAdminPage=location.pathname.replace(/\/+$/,"")==="/admin";
+
+const params=new URLSearchParams(location.search);
+const isAdminPage=
+  location.pathname.replace(/\/+$/,"")==="/admin" ||
+  params.get("admin")==="1";
+
 if(isAdminPage){
   document.getElementById("shop").classList.add("hidden");
   document.getElementById("hero").classList.add("hidden");
   document.querySelector(".intro").classList.add("hidden");
+  document.querySelector(".announcement").classList.add("hidden");
+  document.querySelector("header").classList.add("hidden");
+  document.querySelector("footer").classList.add("hidden");
   document.getElementById("admin").classList.remove("hidden");
   checkSession();
-}else loadProducts();
+}else{
+  loadProducts();
+}
 
-function money(value){return Number(value||0).toLocaleString("ru-RU")+" ₸"}
-function safe(value){return String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]))}
-function safeImage(url){const value=String(url||"");return /^https:\/\/[^\s"'<>]+$/i.test(value)?safe(value):"https://placehold.co/500x600?text=LUNORO"}
+function money(value){
+  return Number(value||0).toLocaleString("ru-RU")+" ₸";
+}
 
+function safe(value){
+  return String(value??"").replace(/[&<>"']/g,char=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[char]));
+}
+
+function safeImage(url){
+  const value=String(url||"");
+  return /^https:\/\/[^\s"'<>]+$/i.test(value)
+    ?safe(value)
+    :"https://placehold.co/500x600?text=LUNORO";
+}
+
+/* ОБЪЁМЫ И ЦЕНЫ */
 function getVariants(product){
-  if(Array.isArray(product.variants)&&product.variants.length)
-    return product.variants.filter(v=>Number(v.price_kzt)>0).sort((a,b)=>Number(a.volume_ml)-Number(b.volume_ml));
-  if(Number(product.price_kzt)>0)return[{volume_ml:Number(product.volume_ml)||100,price_kzt:Number(product.price_kzt),discount_type:"none",discount_value:0}];
-  return[];
+  let variants=product.variants;
+
+  if(typeof variants==="string"){
+    try{
+      variants=JSON.parse(variants);
+    }catch(e){
+      variants=[];
+    }
+  }
+
+  if(Array.isArray(variants)&&variants.length){
+    return variants.map(v=>({
+      volume_ml:Number(v.volume_ml||v.volume)||100,
+      price_kzt:Number(v.price_kzt||v.price)||0,
+      discount_type:v.discount_type||"none",
+      discount_value:Number(v.discount_value)||0
+    }))
+    .filter(v=>v.price_kzt>0)
+    .sort((a,b)=>a.volume_ml-b.volume_ml);
+  }
+
+  if(Number(product.price_kzt)>0){
+    return [{
+      volume_ml:Number(product.volume_ml)||100,
+      price_kzt:Number(product.price_kzt),
+      discount_type:"none",
+      discount_value:0
+    }];
+  }
+
+  return [];
 }
+
 function getPrice(variant){
-  const original=Number(variant.price_kzt)||0,type=variant.discount_type||"none",value=Number(variant.discount_value)||0;
+  const original=Number(variant.price_kzt)||0;
+  const type=variant.discount_type||"none";
+  const value=Number(variant.discount_value)||0;
+
   let finalPrice=original;
-  if(type==="percent")finalPrice=original*(1-value/100);
-  else if(type==="fixed")finalPrice=original-value;
+
+  if(type==="percent"){
+    finalPrice=original*(1-value/100);
+  }else if(type==="fixed"){
+    finalPrice=original-value;
+  }
+
   finalPrice=Math.max(0,Math.round(finalPrice));
-  return{original,final:finalPrice,discounted:finalPrice<original,discount:original>0?Math.round((original-finalPrice)/original*100):0};
+
+  return{
+    original,
+    final:finalPrice,
+    discounted:finalPrice<original,
+    discount:original>0
+      ?Math.round((original-finalPrice)/original*100)
+      :0
+  };
 }
+
 function isNewProduct(product){
   if(!product.created_at)return false;
+
   const created=Date.parse(product.created_at);
   if(!Number.isFinite(created))return false;
+
   const age=Date.now()-created;
   return age>=0&&age<=NEW_DAYS*24*60*60*1000;
 }
+
+/* ЗАГРУЗКА КАТАЛОГА */
 async function loadProducts(){
   const box=document.getElementById("products");
+  if(!box)return;
+
   box.innerHTML='<div class="empty-message">Загрузка коллекции...</div>';
-  const{data,error}=await db.from("products").select("*").eq("is_active",true).order("created_at",{ascending:false});
-  if(error){box.innerHTML='<div class="empty-message">Не удалось загрузить каталог. Попробуйте позже.</div>';return}
-  catalog=data||[];
-  renderProducts();
+
+  try{
+    // Запрашиваем все товары без обязательного фильтра
+    // по is_active и без сортировки по created_at.
+    const {data,error}=await db
+      .from("products")
+      .select("*");
+
+    if(error)throw error;
+
+    catalog=(data||[]).filter(product=>product.is_active!==false);
+
+    catalog.sort((a,b)=>
+      (Date.parse(b.created_at||"")||0)-
+      (Date.parse(a.created_at||"")||0)
+    );
+
+    renderProducts();
+
+    if(!catalog.length){
+      box.innerHTML=
+        '<div class="empty-message">В каталоге пока нет ароматов.</div>';
+    }
+
+  }catch(error){
+    console.error("LUNORO catalog error:",error);
+
+    box.innerHTML=
+      '<div class="empty-message">Ошибка загрузки каталога: '+
+      safe(error.message||"Проверьте настройки Supabase")+
+      '</div>';
+  }
 }
+
+/* ПОИСК И КАТЕГОРИИ */
 function setCategory(category){
   activeCategory=category;
-  document.querySelectorAll(".category-btn").forEach(button=>button.classList.toggle("active",button.textContent.trim()===(category==="Все"?"Все ароматы":category)));
+
+  document.querySelectorAll(".category-btn").forEach(button=>{
+    button.classList.toggle(
+      "active",
+      button.textContent.trim()===(category==="Все"?"Все ароматы":category)
+    );
+  });
+
   renderProducts();
 }
+
 function renderProducts(){
-  const box=document.getElementById("products"),search=document.getElementById("searchInput").value.trim().toLowerCase();
-  const filtered=catalog.filter(p=>(activeCategory==="Все"||p.category===activeCategory)&&((p.name||"").toLowerCase().includes(search)||(p.brand||"").toLowerCase().includes(search)));
-  if(!filtered.length){box.innerHTML='<div class="empty-message">Ароматы не найдены</div>';return}
+  const box=document.getElementById("products");
+  if(!box)return;
+
+  const search=(document.getElementById("searchInput")?.value||"")
+    .trim()
+    .toLowerCase();
+
+  const filtered=catalog.filter(product=>
+    (activeCategory==="Все"||product.category===activeCategory)&&
+    (
+      (product.name||"").toLowerCase().includes(search)||
+      (product.brand||"").toLowerCase().includes(search)
+    )
+  );
+
+  if(!filtered.length){
+    box.innerHTML=
+      '<div class="empty-message">Ароматы не найдены</div>';
+    return;
+  }
+
   box.innerHTML=filtered.map(product=>{
     const variants=getVariants(product);
     if(!variants.length)return"";
-    const first=getPrice(variants[0]),newItem=isNewProduct(product);
+
+    const first=getPrice(variants[0]);
+    const newItem=isNewProduct(product);
+
     return `
     <article class="product">
       <div class="product-image-wrap">
-        <img class="product-image" src="${safeImage(product.image_url)}" alt="${safe(product.name)}" loading="lazy" onerror="this.src='https://placehold.co/500x600?text=LUNORO'">
+        <img
+          class="product-image"
+          src="${safeImage(product.image_url)}"
+          alt="${safe(product.name)}"
+          loading="lazy"
+          onerror="this.src='https://placehold.co/500x600?text=LUNORO'"
+        >
         ${newItem?'<span class="product-tag new">✦ NEW</span>':""}
       </div>
+
       <div class="product-info">
         <div class="product-brand">${safe(product.brand||"LUNORO")}</div>
         <h3>${safe(product.name)}</h3>
-        ${product.description?`<div class="product-description">${safe(product.description)}</div>`:""}
+
+        ${product.description
+          ?`<div class="product-description">${safe(product.description)}</div>`
+          :""}
+
         <div class="volume-label">Выберите объём</div>
+
         <div class="volume-options" id="volumes-${safe(product.id)}">
-          ${variants.map((v,i)=>{const vp=getPrice(v);return `<button type="button" class="volume-btn ${i===0?"active":""}" aria-pressed="${i===0}" onclick="selectVolume('${safe(product.id)}',${i})">${Number(v.volume_ml)} мл${vp.discounted?`<span class="volume-discount">−${vp.discount}%</span>`:""}</button>`}).join("")}
+          ${variants.map((variant,index)=>{
+            const price=getPrice(variant);
+
+            return `
+              <button
+                type="button"
+                class="volume-btn ${index===0?"active":""}"
+                aria-pressed="${index===0}"
+                onclick="selectVolume('${safe(product.id)}',${index})"
+              >
+                ${Number(variant.volume_ml)} мл
+                ${price.discounted
+                  ?`<span class="volume-discount">−${price.discount}%</span>`
+                  :""}
+              </button>
+            `;
+          }).join("")}
         </div>
+
         <div class="price-line" id="price-${safe(product.id)}">
-          ${first.discounted?`<span class="old-price">${money(first.original)}</span><span class="discount-badge">−${first.discount}% СКИДКА</span>`:""}
+          ${first.discounted
+            ?`<span class="old-price">${money(first.original)}</span>
+              <span class="discount-badge">−${first.discount}% СКИДКА</span>`
+            :""}
           <span class="price">${money(first.final)}</span>
         </div>
-        <button class="add-btn" onclick="addCart('${safe(product.id)}')">ДОБАВИТЬ В КОРЗИНУ&nbsp; +</button>
+
+        <button
+          class="add-btn"
+          onclick="addCart('${safe(product.id)}')"
+        >
+          ДОБАВИТЬ В КОРЗИНУ&nbsp; +
+        </button>
       </div>
     </article>`;
   }).join("");
 }
+
 function selectedVariantIndex(id){
   const group=document.getElementById("volumes-"+id);
   return group?Number(group.dataset.selected||0):0;
 }
+
 function selectVolume(id,index){
   const product=catalog.find(p=>String(p.id)===String(id));
   if(!product)return;
-  const variants=getVariants(product),variant=variants[index];
+
+  const variants=getVariants(product);
+  const variant=variants[index];
   if(!variant)return;
+
   const group=document.getElementById("volumes-"+id);
   group.dataset.selected=String(index);
-  group.querySelectorAll(".volume-btn").forEach((b,i)=>{
+
+  group.querySelectorAll(".volume-btn").forEach((button,i)=>{
     const active=i===index;
-    b.classList.toggle("active",active);
-    b.setAttribute("aria-pressed",String(active));
+    button.classList.toggle("active",active);
+    button.setAttribute("aria-pressed",String(active));
   });
+
   const price=getPrice(variant);
+
   document.getElementById("price-"+id).innerHTML=`
-    ${price.discounted?`<span class="old-price">${money(price.original)}</span><span class="discount-badge">−${price.discount}% СКИДКА</span>`:""}
-    <span class="price">${money(price.final)}</span>`;
+    ${price.discounted
+      ?`<span class="old-price">${money(price.original)}</span>
+        <span class="discount-badge">−${price.discount}% СКИДКА</span>`
+      :""}
+    <span class="price">${money(price.final)}</span>
+  `;
 }
+
 function showToast(productName){
   const toast=document.getElementById("toast");
-  toast.innerHTML=`<strong>${safe(productName)}</strong> добавлен в корзину`;
+
+  toast.innerHTML=
+    `<strong>${safe(productName)}</strong> добавлен в корзину`;
+
   toast.classList.add("show");
   clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>toast.classList.remove("show"),1800);
+
+  toastTimer=setTimeout(
+    ()=>toast.classList.remove("show"),
+    1800
+  );
 }
-    const price=getPrice(variant);
-  const existing=cart.find(item=>String(item.id)===String(product.id)&&Number(item.volume_ml)===Number(variant.volume_ml));
-  if(existing)existing.quantity++;
-  else cart.push({
-    id:product.id,name:product.name,brand:product.brand||"",
-    volume_ml:Number(variant.volume_ml),price_kzt:price.final,
-    original_price_kzt:price.original,discount_kzt:price.original-price.final,
-    discount_label:price.discount+"%",quantity:1
-  });
+/* КОРЗИНА */
+function addCart(id){
+  const product=catalog.find(p=>String(p.id)===String(id));
+  if(!product)return;
+
+  const variant=getVariants(product)[selectedVariantIndex(id)];
+  if(!variant)return;
+
+  const price=getPrice(variant);
+
+  const existing=cart.find(item=>
+    String(item.id)===String(product.id)&&
+    Number(item.volume_ml)===Number(variant.volume_ml)
+  );
+
+  if(existing){
+    existing.quantity++;
+  }else{
+    cart.push({
+      id:product.id,
+      name:product.name,
+      brand:product.brand||"",
+      volume_ml:Number(variant.volume_ml),
+      price_kzt:price.final,
+      original_price_kzt:price.original,
+      discount_kzt:price.original-price.final,
+      discount_label:price.discount+"%",
+      quantity:1
+    });
+  }
+
   updateCart();
   showToast(product.name);
 }
+
 function updateQuantity(index,change){
   if(!cart[index])return;
+
   cart[index].quantity+=change;
-  if(cart[index].quantity<=0)cart.splice(index,1);
+
+  if(cart[index].quantity<=0){
+    cart.splice(index,1);
+  }
+
   updateCart();
 }
-function removeCartItem(index){cart.splice(index,1);updateCart()}
+
+function removeCartItem(index){
+  cart.splice(index,1);
+  updateCart();
+}
+
 function updateCart(){
   const box=document.getElementById("items");
-  if(!cart.length)box.innerHTML='<div class="cart-empty">Корзина пока пуста</div>';
-  else box.innerHTML=cart.map((item,index)=>`
-    <div class="cart-row">
-      <div class="cart-row-name">${safe(item.name)}</div>
-      <div class="cart-row-info">${safe(item.brand)} · ${item.volume_ml} мл</div>
-      ${item.discount_kzt>0?`<div class="cart-row-info"><span class="old-price">${money(item.original_price_kzt)}</span> <span class="discount-badge">${safe(item.discount_label)}</span></div>`:""}
-      <div class="cart-row-price">${money(item.price_kzt)}</div>
-      <div class="cart-actions">
-        <button aria-label="Уменьшить количество" onclick="updateQuantity(${index},-1)">−</button>
-        <span>${item.quantity}</span>
-        <button aria-label="Увеличить количество" onclick="updateQuantity(${index},1)">+</button>
-        <button class="remove-btn" onclick="removeCartItem(${index})">Удалить</button>
+
+  if(!cart.length){
+    box.innerHTML='<div class="cart-empty">Корзина пока пуста</div>';
+  }else{
+    box.innerHTML=cart.map((item,index)=>`
+      <div class="cart-row">
+        <div class="cart-row-name">${safe(item.name)}</div>
+        <div class="cart-row-info">
+          ${safe(item.brand)} · ${item.volume_ml} мл
+        </div>
+
+        ${item.discount_kzt>0
+          ?`<div class="cart-row-info">
+              <span class="old-price">${money(item.original_price_kzt)}</span>
+              <span class="discount-badge">${safe(item.discount_label)}</span>
+            </div>`
+          :""}
+
+        <div class="cart-row-price">${money(item.price_kzt)}</div>
+
+        <div class="cart-actions">
+          <button aria-label="Уменьшить количество"
+            onclick="updateQuantity(${index},-1)">−</button>
+          <span>${item.quantity}</span>
+          <button aria-label="Увеличить количество"
+            onclick="updateQuantity(${index},1)">+</button>
+          <button class="remove-btn"
+            onclick="removeCartItem(${index})">Удалить</button>
+        </div>
       </div>
-    </div>`).join("");
-  const total=cart.reduce((s,i)=>s+i.price_kzt*i.quantity,0);
-  const count=cart.reduce((s,i)=>s+i.quantity,0);
-  document.getElementById("total").textContent="Итого: "+money(total);
+    `).join("");
+  }
+
+  const total=cart.reduce((sum,item)=>
+    sum+item.price_kzt*item.quantity,0
+  );
+
+  const count=cart.reduce((sum,item)=>
+    sum+item.quantity,0
+  );
+
+  document.getElementById("total").textContent=
+    "Итого: "+money(total);
+
   const badge=document.getElementById("cartCount");
   badge.textContent=count;
   badge.classList.toggle("hidden",count===0);
 }
+
 function toggleCart(){
-  document.getElementById("cartDrawer").classList.contains("hidden")?openCart():closeCart();
+  document.getElementById("cartDrawer").classList.contains("hidden")
+    ?openCart()
+    :closeCart();
 }
+
 function openCart(){
   document.getElementById("cartDrawer").classList.remove("hidden");
   document.getElementById("cartOverlay").classList.remove("hidden");
   document.body.style.overflow="hidden";
 }
+
 function closeCart(){
   document.getElementById("cartDrawer").classList.add("hidden");
   document.getElementById("cartOverlay").classList.add("hidden");
@@ -298,14 +556,29 @@ function closeCart(){
 
 /* ОФОРМЛЕНИЕ ЗАКАЗА */
 function order(){
-  if(!cart.length){alert("Сначала добавьте товар в корзину");return}
+  if(!cart.length){
+    alert("Сначала добавьте товар в корзину");
+    return;
+  }
+
   const name=document.getElementById("customerName").value.trim();
   const customerPhone=document.getElementById("customerPhone").value.trim();
   const city=document.getElementById("customerCity").value.trim();
   const comment=document.getElementById("customerComment").value.trim();
-  if(!name||!customerPhone||!city){alert("Заполните имя, номер телефона и город");return}
-  const total=cart.reduce((s,i)=>s+i.price_kzt*i.quantity,0);
-  const itemsText=cart.map(i=>`${i.name} (${i.volume_ml} мл) × ${i.quantity} — ${money(i.price_kzt*i.quantity)}`).join("\n");
+
+  if(!name||!customerPhone||!city){
+    alert("Заполните имя, номер телефона и город");
+    return;
+  }
+
+  const total=cart.reduce((sum,item)=>
+    sum+item.price_kzt*item.quantity,0
+  );
+
+  const itemsText=cart.map(item=>
+    `${item.name} (${item.volume_ml} мл) × ${item.quantity} — ${money(item.price_kzt*item.quantity)}`
+  ).join("\n");
+
   const message=`Здравствуйте! Хочу оформить заказ в LUNORO.
 
 ${itemsText}
@@ -316,138 +589,317 @@ ${itemsText}
 Телефон: ${customerPhone}
 Город: ${city}
 ${comment?"Комментарий: "+comment:""}`;
-  window.open("https://wa.me/"+phone+"?text="+encodeURIComponent(message),"_blank");
+
+  window.open(
+    "https://wa.me/"+phone+"?text="+encodeURIComponent(message),
+    "_blank"
+  );
 }
 
 /* АДМИН-ПАНЕЛЬ */
 async function checkSession(){
-  const{data}=await db.auth.getSession();
-  if(data.session)showAdmin();
+  try{
+    const{data,error}=await db.auth.getSession();
+
+    if(error)throw error;
+
+    if(data&&data.session){
+      showAdmin();
+    }else{
+      document.getElementById("loginBox").classList.remove("hidden");
+      document.getElementById("manageBox").classList.add("hidden");
+    }
+
+  }catch(error){
+    console.error("Admin session error:",error);
+
+    document.getElementById("loginMessage").textContent=
+      "Не удалось проверить вход. Проверьте подключение Supabase.";
+  }
 }
+
 async function login(){
   const email=document.getElementById("email").value.trim();
   const password=document.getElementById("password").value;
   const message=document.getElementById("loginMessage");
+
   message.textContent="Проверка...";
-  const{error}=await db.auth.signInWithPassword({email,password});
-  if(error){message.textContent="Не удалось войти. Проверьте почту и пароль.";return}
+
+  const{error}=await db.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if(error){
+    message.textContent="Не удалось войти. Проверьте почту и пароль.";
+    return;
+  }
+
   message.textContent="";
   showAdmin();
 }
+
 function showAdmin(){
   document.getElementById("loginBox").classList.add("hidden");
   document.getElementById("manageBox").classList.remove("hidden");
+
   createVariantEditors();
   loadAdminProducts();
 }
+
 async function logout(){
   await db.auth.signOut();
+
   document.getElementById("manageBox").classList.add("hidden");
   document.getElementById("loginBox").classList.remove("hidden");
 }
 function createVariantEditors(existingVariants=[]){
-  document.getElementById("variantEditors").innerHTML=VOLUMES.map(volume=>{
-    const v=existingVariants.find(x=>Number(x.volume_ml)===volume)||{};
-    return`
-      <div class="variant-editor">
-        <h4>Объём ${volume} мл</h4>
-                <label>Цена (₸)</label>
-        <input type="number" min="0" id="variant-price-${volume}" value="${v.price_kzt||""}" placeholder="Например, 10000">
-        <label>Тип скидки</label>
-        <select id="variant-type-${volume}">
-          <option value="none" ${!v.discount_type||v.discount_type==="none"?"selected":""}>Без скидки</option>
-          <option value="percent" ${v.discount_type==="percent"?"selected":""}>Процент (%)</option>
-          <option value="fixed" ${v.discount_type==="fixed"?"selected":""}>Сумма (₸)</option>
-        </select>
-        <label>Размер скидки</label>
-        <input type="number" min="0" id="variant-discount-${volume}" value="${v.discount_value||""}" placeholder="Например, 10">
-      </div>`;
-  }).join("");
+  document.getElementById("variantEditors").innerHTML=
+    VOLUMES.map(volume=>{
+      const v=existingVariants.find(x=>
+        Number(x.volume_ml)===volume
+      )||{};
+
+      return`
+        <div class="variant-editor">
+          <h4>Объём ${volume} мл</h4>
+
+          <label>Цена (₸)</label>
+          <input
+            type="number"
+            min="0"
+            id="variant-price-${volume}"
+            value="${v.price_kzt||""}"
+            placeholder="Например, 10000"
+          >
+
+          <label>Тип скидки</label>
+          <select id="variant-type-${volume}">
+            <option value="none"
+              ${!v.discount_type||v.discount_type==="none"?"selected":""}>
+              Без скидки
+            </option>
+            <option value="percent"
+              ${v.discount_type==="percent"?"selected":""}>
+              Процент (%)
+            </option>
+            <option value="fixed"
+              ${v.discount_type==="fixed"?"selected":""}>
+              Сумма (₸)
+            </option>
+          </select>
+
+          <label>Размер скидки</label>
+          <input
+            type="number"
+            min="0"
+            id="variant-discount-${volume}"
+            value="${v.discount_value||""}"
+            placeholder="Например, 10"
+          >
+        </div>
+      `;
+    }).join("");
 }
+
 function readVariants(){
   const variants=[];
+
   VOLUMES.forEach(volume=>{
-    const price=Number(document.getElementById("variant-price-"+volume).value);
+    const price=Number(
+      document.getElementById("variant-price-"+volume).value
+    );
+
     const type=document.getElementById("variant-type-"+volume).value;
-    const discount=Number(document.getElementById("variant-discount-"+volume).value)||0;
-    if(price>0)variants.push({
-      volume_ml:volume,price_kzt:price,discount_type:type,
-      discount_value:type==="none"?0:discount
-    });
+
+    const discount=Number(
+      document.getElementById("variant-discount-"+volume).value
+    )||0;
+
+    if(price>0){
+      variants.push({
+        volume_ml:volume,
+        price_kzt:price,
+        discount_type:type,
+        discount_value:type==="none"?0:discount
+      });
+    }
   });
+
   return variants;
 }
+
 function resetForm(){
   editingId=null;
+
   document.getElementById("productForm").reset();
   document.getElementById("formTitle").textContent="Добавить парфюм";
+
   createVariantEditors();
 }
-document.getElementById("productForm").addEventListener("submit",async event=>{
-  event.preventDefault();
-  const{data:{session}}=await db.auth.getSession();
-  if(!session){alert("Сначала войдите в админ-панель");return}
-  const variants=readVariants();
-  if(!variants.length){alert("Укажите цену хотя бы для одного объёма");return}
-  const first=variants[0];
-  const item={
-    name:document.getElementById("name").value.trim(),
-    brand:document.getElementById("brand").value.trim(),
-    category:document.getElementById("category").value,
-    description:document.getElementById("description").value.trim(),
-    image_url:document.getElementById("image").value.trim()||null,
-    variants,volume_ml:first.volume_ml,price_kzt:first.price_kzt,is_active:true
-  };
-  let result;
-  if(editingId)result=await db.from("products").update(item).eq("id",editingId);
-  else result=await db.from("products").insert(item);
-  if(result.error){alert("Ошибка сохранения: "+result.error.message);return}
-  alert("Товар успешно сохранён!");
-  resetForm();
-  loadAdminProducts();
-  loadProducts();
-});
+
+/* СОХРАНЕНИЕ ТОВАРА */
+document.getElementById("productForm").addEventListener(
+  "submit",
+  async event=>{
+    event.preventDefault();
+
+    const{data:{session}}=await db.auth.getSession();
+
+    if(!session){
+      alert("Сначала войдите в админ-панель");
+      return;
+    }
+
+    const variants=readVariants();
+
+    if(!variants.length){
+      alert("Укажите цену хотя бы для одного объёма");
+      return;
+    }
+
+    const first=variants[0];
+
+    const item={
+      name:document.getElementById("name").value.trim(),
+      brand:document.getElementById("brand").value.trim(),
+      category:document.getElementById("category").value,
+      description:document.getElementById("description").value.trim(),
+      image_url:document.getElementById("image").value.trim()||null,
+      variants,
+      volume_ml:first.volume_ml,
+      price_kzt:first.price_kzt,
+      is_active:true
+    };
+
+    let result;
+
+    if(editingId){
+      result=await db
+        .from("products")
+        .update(item)
+        .eq("id",editingId);
+    }else{
+      result=await db
+        .from("products")
+        .insert(item);
+    }
+
+    if(result.error){
+      alert("Ошибка сохранения: "+result.error.message);
+      return;
+    }
+
+    alert("Товар успешно сохранён!");
+
+    resetForm();
+    loadAdminProducts();
+    loadProducts();
+  }
+);
+
+/* СПИСОК ТОВАРОВ В АДМИНКЕ */
 async function loadAdminProducts(){
   const box=document.getElementById("adminProducts");
   box.textContent="Загрузка...";
-  const{data,error}=await db.from("products").select("*").order("created_at",{ascending:false});
-  if(error){box.textContent="Нет доступа или ошибка загрузки.";return}
-  if(!data||!data.length){box.textContent="Товаров пока нет.";return}
+
+  const{data,error}=await db
+    .from("products")
+    .select("*");
+
+  if(error){
+    console.error("Admin products error:",error);
+    box.textContent="Ошибка загрузки: "+error.message;
+    return;
+  }
+
+  if(!data||!data.length){
+    window.adminCatalog=[];
+    box.textContent="Товаров пока нет.";
+    return;
+  }
+
+  data.sort((a,b)=>
+    (Date.parse(b.created_at||"")||0)-
+    (Date.parse(a.created_at||"")||0)
+  );
+
   window.adminCatalog=data;
-  box.innerHTML=data.map(p=>{
-    const prices=getVariants(p).map(v=>`${v.volume_ml} мл — ${money(getPrice(v).final)}`).join("<br>");
+
+  box.innerHTML=data.map(product=>{
+    const prices=getVariants(product)
+      .map(v=>`${v.volume_ml} мл — ${money(getPrice(v).final)}`)
+      .join("<br>");
+
     return`
       <div class="product-admin">
-        <b>${safe(p.name)}</b>
-        <p class="muted">${safe(p.brand||"")}</p>
+        <b>${safe(product.name)}</b>
+        <p class="muted">${safe(product.brand||"")}</p>
         <p class="muted">${prices}</p>
-        <button onclick="editProduct('${safe(p.id)}')">ИЗМЕНИТЬ</button>
-        <button class="danger" onclick="deleteProduct('${safe(p.id)}')">УДАЛИТЬ</button>
-      </div>`;
+
+        <button onclick="editProduct('${safe(product.id)}')">
+          ИЗМЕНИТЬ
+        </button>
+
+        <button
+          class="danger"
+          onclick="deleteProduct('${safe(product.id)}')"
+        >
+          УДАЛИТЬ
+        </button>
+      </div>
+    `;
   }).join("");
 }
+
+/* РЕДАКТИРОВАНИЕ */
 function editProduct(id){
-  const p=(window.adminCatalog||[]).find(x=>String(x.id)===String(id));
-  if(!p)return;
+  const product=(window.adminCatalog||[])
+    .find(item=>String(item.id)===String(id));
+
+  if(!product)return;
+
   editingId=id;
-  document.getElementById("name").value=p.name||"";
-  document.getElementById("brand").value=p.brand||"";
-  document.getElementById("category").value=p.category||"Мужские";
-  document.getElementById("description").value=p.description||"";
-  document.getElementById("image").value=p.image_url||"";
-  createVariantEditors(getVariants(p));
+
+  document.getElementById("name").value=product.name||"";
+  document.getElementById("brand").value=product.brand||"";
+  document.getElementById("category").value=product.category||"Мужские";
+  document.getElementById("description").value=product.description||"";
+  document.getElementById("image").value=product.image_url||"";
+
+  createVariantEditors(getVariants(product));
+
   document.getElementById("formTitle").textContent="Изменить парфюм";
-  window.scrollTo({top:0,behavior:"smooth"});
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
 }
+
+/* УДАЛЕНИЕ */
 async function deleteProduct(id){
   if(!confirm("Удалить этот товар?"))return;
-  const{error}=await db.from("products").delete().eq("id",id);
-  if(error){alert("Ошибка удаления: "+error.message);return}
+
+  const{error}=await db
+    .from("products")
+    .delete()
+    .eq("id",id);
+
+  if(error){
+    alert("Ошибка удаления: "+error.message);
+    return;
+  }
+
   alert("Товар удалён");
+
   loadAdminProducts();
   loadProducts();
 }
-document.addEventListener("keydown",event=>{if(event.key==="Escape")closeCart()});
+
+document.addEventListener("keydown",event=>{
+  if(event.key==="Escape")closeCart();
+});
 </script>
 </body>
 </html>
